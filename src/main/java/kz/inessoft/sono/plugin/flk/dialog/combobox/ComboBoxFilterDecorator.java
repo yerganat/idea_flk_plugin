@@ -14,6 +14,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+//			ComboBoxFilterDecorator<String> decorate = ComboBoxFilterDecorator.decorate(mainFieldComboBox,
+//        UnaryOperator.identity(),
+//        (v, s) -> v.toLowerCase().contains(s.toLowerCase()));
+//
+//        mainFieldComboBox.setRenderer(new CustomComboRenderer(decorate.getFilterTextSupplier()));
 public class ComboBoxFilterDecorator<T> {
     private JComboBox<T> comboBox;
     private BiPredicate<T, String> userFilter;

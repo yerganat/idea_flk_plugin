@@ -1,12 +1,17 @@
 package kz.inessoft.sono.plugin.flk.dialog;
 
 import javax.swing.*;
+import javax.swing.text.JTextComponent;
+
 import com.jgoodies.forms.factories.*;
 import kz.inessoft.sono.plugin.flk.SonoFlkAction;
 import kz.inessoft.sono.plugin.flk.dialog.combobox.ComboBoxFilterDecorator;
 import kz.inessoft.sono.plugin.flk.dialog.combobox.CustomComboRenderer;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 
+import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 /*
@@ -56,7 +61,7 @@ public class JFlkConfigPanel extends JPanel {
 		// Generated using JFormDesigner Evaluation license - MERZENTAY YERGANAT
 		fieldPanel = new JPanel();
 		mainFieldLabel = new JLabel();
-		mainFieldComboBox = new JComboBox();
+		mainFieldComboBox = new JSearchBox();
 		requirementPanel = new JPanel();
 		requiredRadioButton = new JRadioButton();
 		conditionRequiredRadioButton = new JRadioButton();
@@ -96,14 +101,8 @@ public class JFlkConfigPanel extends JPanel {
 			for (String filed : SonoFlkAction.pagesInfo.keySet()) {
 				mainFieldComboBox.addItem(filed);
 			}
-			//mainFieldComboBox.setEditable(true);
+			mainFieldComboBox.setEditable(true);
 			//AutoCompleteDecorator.decorate(mainFieldComboBox);
-			ComboBoxFilterDecorator<String> decorate = ComboBoxFilterDecorator.decorate(mainFieldComboBox,
-					UnaryOperator.identity(),
-					(v, s) -> v.toLowerCase().contains(s.toLowerCase()));
-
-			mainFieldComboBox.setRenderer(new CustomComboRenderer(decorate.getFilterTextSupplier()));
-
 		}
 		add(fieldPanel);
 
