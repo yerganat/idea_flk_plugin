@@ -10,6 +10,7 @@ import com.intellij.pom.Navigatable;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiTypesUtil;
+import kz.inessoft.sono.plugin.flk.dialog.SampleDialogWrapper;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -23,7 +24,7 @@ import java.util.Map;
  */
 public class SonoFlkAction extends AnAction {
 
-    private static Map<String, PageInfo> pagesInfo = new HashMap<>();
+    public static Map<String, PageInfo> pagesInfo = new HashMap<>();
 
     private static class PageInfo {
         String xmlPageName;
@@ -35,6 +36,65 @@ public class SonoFlkAction extends AnAction {
         boolean isFieldList;
     }
 
+    @Override
+    public void update(AnActionEvent e) {
+        // Set the availability based on whether a project is open
+        Project project = e.getProject();
+        e.getPresentation().setEnabledAndVisible(project != null);
+    }
+
+    @Override
+    public void actionPerformed(@NotNull AnActionEvent event) {
+        PsiFile psiFile = event.getData(CommonDataKeys.PSI_FILE);
+
+        psiFile.accept(new JavaRecursiveElementVisitor() {
+            @Override
+            public void visitLocalVariable(PsiLocalVariable variable) {
+                super.visitLocalVariable(variable);
+                fillVariables(variable.getType(), true, variable.getName(), variable.getTypeElement().getText());
+            }
+        });
+
+        Editor editor = event.getData(CommonDataKeys.EDITOR);
+        PsiFile psiFile2 = event.getData(CommonDataKeys.PSI_FILE);
+        //if (editor == null || psiFile == null) return;
+        int offset = editor.getCaretModel().getOffset();
+        PsiElement element = psiFile2.findElementAt(offset);
+
+        //PsiMethod containingMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
+        //PsiClass containingClass = containingMethod.getContainingClass();
+
+        PsiClass containingClass = PsiTreeUtil.getParentOfType(element, PsiClass.class);
+        for (PsiField psiField : containingClass.getFields()) {
+            fillVariables(psiField.getType(), false, psiField.getName(), null);
+        }
+
+        PsiClass parentClass = containingClass.getSuperClass();
+        for (PsiField psiField : parentClass.getFields()) {
+
+            fillVariables(psiField.getType(), false, psiField.getName(), null);
+        }
+
+        SampleDialogWrapper dialogWrapper = new SampleDialogWrapper();
+        if(!dialogWrapper.showAndGet()) {
+            return;
+        }
+
+        WriteCommandAction.runWriteCommandAction(element.getProject(), () ->{
+            SonoFlkUtility.generateCode(element);
+
+        });
+        // Using the event, create and show a dialog
+        Project currentProject = event.getProject();
+        StringBuffer dlgMsg = new StringBuffer(event.getPresentation().getText() + " Selected!");
+        String dlgTitle = event.getPresentation().getDescription();
+        // If an element is selected in the editor, add info about it.
+        Navigatable nav = event.getData(CommonDataKeys.NAVIGATABLE);
+        if (nav != null) {
+            dlgMsg.append(String.format("\nSelected Element: %s", nav.toString()));
+        }
+        Messages.showMessageDialog(currentProject, dlgMsg.toString(), dlgTitle, Messages.getInformationIcon());
+    }
 
     private static void fillVariables(PsiType psiType, boolean isLocalVariable, String variableName, String localVariableType) {
         boolean isFieldList = false;
@@ -77,66 +137,6 @@ public class SonoFlkAction extends AnAction {
             if(!pagesInfo.containsKey(xmlFieldName) || isLocalVariable)
                 pagesInfo.put(xmlFieldName, pageInfo);
         }
-    }
-
-    @Override
-    public void actionPerformed(@NotNull AnActionEvent event) {
-        PsiFile psiFile = event.getData(CommonDataKeys.PSI_FILE);
-
-        psiFile.accept(new JavaRecursiveElementVisitor() {
-            @Override
-            public void visitLocalVariable(PsiLocalVariable variable) {
-                super.visitLocalVariable(variable);
-                fillVariables(variable.getType(), true, variable.getName(), variable.getTypeElement().getText());
-            }
-        });
-
-        Editor editor = event.getData(CommonDataKeys.EDITOR);
-        PsiFile psiFile2 = event.getData(CommonDataKeys.PSI_FILE);
-        //if (editor == null || psiFile == null) return;
-        int offset = editor.getCaretModel().getOffset();
-        PsiElement element = psiFile2.findElementAt(offset);
-
-        //PsiMethod containingMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
-        //PsiClass containingClass = containingMethod.getContainingClass();
-
-        PsiClass containingClass = PsiTreeUtil.getParentOfType(element, PsiClass.class);
-        for (PsiField psiField : containingClass.getFields()) {
-            fillVariables(psiField.getType(), false, psiField.getName(), null);
-        }
-
-        PsiClass parentClass = containingClass.getSuperClass();
-        for (PsiField psiField : parentClass.getFields()) {
-
-            fillVariables(psiField.getType(), false, psiField.getName(), null);
-        }
-
-        WriteCommandAction.runWriteCommandAction(element.getProject(), () ->{
-            SonoFlkUtility.generateCode(element);
-
-        });
-        // Using the event, create and show a dialog
-        Project currentProject = event.getProject();
-        StringBuffer dlgMsg = new StringBuffer(event.getPresentation().getText() + " Selected!");
-        String dlgTitle = event.getPresentation().getDescription();
-        // If an element is selected in the editor, add info about it.
-        Navigatable nav = event.getData(CommonDataKeys.NAVIGATABLE);
-        if (nav != null) {
-            dlgMsg.append(String.format("\nSelected Element: %s", nav.toString()));
-        }
-        Messages.showMessageDialog(currentProject, dlgMsg.toString(), dlgTitle, Messages.getInformationIcon());
-    }
-
-    /**
-     * Determines whether this menu item is available for the current context.
-     * Requires a project to be open.
-     * @param e Event received when the associated group-id menu is chosen.
-     */
-    @Override
-    public void update(AnActionEvent e) {
-        // Set the availability based on whether a project is open
-        Project project = e.getProject();
-        e.getPresentation().setEnabledAndVisible(project != null);
     }
 
 }
