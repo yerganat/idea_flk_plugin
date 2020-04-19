@@ -6,6 +6,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import kz.inessoft.sono.plugin.flk.utils.PsiDocumentUtils;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CodeGenerator {
     public static void generateCode(PsiElement psiElement, FormHandler formHandler) {
@@ -23,7 +24,7 @@ public class CodeGenerator {
 
         PsiMethod containingMethod = PsiTreeUtil.getParentOfType(psiElement, PsiMethod.class);
         if (containingMethod != null) {
-            document.insertString(psiElement.getTextOffset(), doFlkMethodCall(formHandler.mainXmlField));
+            document.insertString(psiElement.getTextOffset(), doFlkMethodCall(formHandler.mainXmlField, formHandler.dependOnXmlFieldList));
             //document.insertString(psiElement.getTextOffset(), "\nString generatedTest;");
         }
 
@@ -44,13 +45,13 @@ public class CodeGenerator {
         String checkString = "";
         switch (fieldInfo.fieldType) {
             case "java.lang.String":
-                checkString = "BooleanUtils." +(filled?"isTrue":"isNotTrue")
-                        + "("+ pageVariableTmp + "." + methodName(fieldInfo.fieldProperty, "is") + "()";
-                break;
-            case "java.lang.Boolean": ;
-            case "boolean":
                 checkString = "StringUtils." +(filled?"isNotBlank":"isBlank")
-                        + "("+ pageVariableTmp + "." + methodName(fieldInfo.fieldProperty, "get") + "()";
+                        + "("+ pageVariableTmp + "." + methodName(fieldInfo.fieldProperty, "get") + "())";
+                break;
+            case "java.lang.Boolean":
+            case "boolean":
+                checkString = "BooleanUtils." +(filled?"isTrue":"isNotTrue")
+                        + "("+ pageVariableTmp + "." + methodName(fieldInfo.fieldProperty, "is") + "())";
                 break;
             default:
                 checkString = pageVariableTmp + "."
@@ -65,9 +66,9 @@ public class CodeGenerator {
         return checkString;
     }
 
-    private static String doFlkMethodCall(String flkCheckXmlField) {
+    private static String doFlkMethodCall(String flkCheckXmlField, List<String> dependOnXmlFields) {
         DataHandler.FieldInfo fieldInfo = DataHandler.fields.get(flkCheckXmlField);
-        return methodName(fieldInfo.fieldProperty, "doFlk") + "();";
+        return methodName(fieldInfo.fieldProperty, "doFlk") + parameterListStr(dependOnXmlFields.stream().filter(fld->DataHandler.fields.get(fld).isLocalPageVariable).collect(Collectors.toList())) + ";";
     }
 
     private static String doFlkMethodDeclaration(String xmlField, List<String> dependOnXmlFields) {
@@ -75,7 +76,9 @@ public class CodeGenerator {
 
         StringBuilder sb = new StringBuilder();
         sb.append("\n//" + fieldInfo.xmlPageName + "." + fieldInfo.xmlFieldName + "\n");
-        sb.append("private void ").append(methodName(fieldInfo.fieldProperty, "doFlk")).append("(){\n");
+        sb.append("private void ").append(methodName(fieldInfo.fieldProperty, "doFlk"));
+
+        sb.append(parameterListStr(dependOnXmlFields.stream().filter(fld->DataHandler.fields.get(fld).isLocalPageVariable).collect(Collectors.toList()))).append("{\n");
 
         sb.append("if(" + checkStr(fieldInfo, false));
 
@@ -98,5 +101,27 @@ public class CodeGenerator {
         sb.append("}\n");
 
         return sb.toString();
+    }
+
+    private static String parameterListStr(List<String> localVarList) {
+        StringBuilder prameterSb = new StringBuilder();
+        for (int i = 0; i < localVarList.size(); i++ ) {
+            DataHandler.FieldInfo dfi = DataHandler.fields.get(localVarList.get(i));
+            if(dfi.isLocalPageVariable) {
+                prameterSb.append(dfi.localPageVariableType).append(" ").append(dfi.pageVariable);
+
+                if(i != localVarList.size() - 1)
+                    prameterSb.append(" ,");
+            }
+
+        }
+
+        if(prameterSb.length() > 0) {
+            prameterSb.append("(").append(prameterSb).append(")");
+        } else {
+            prameterSb.append("()");
+        }
+
+        return prameterSb.toString();
     }
 }
