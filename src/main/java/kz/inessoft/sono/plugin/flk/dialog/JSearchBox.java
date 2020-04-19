@@ -39,7 +39,7 @@ public class JSearchBox extends JComboBox {
 
     private void init() {
         setEditable(true);
-
+        setEditor(new SearchEditor(this));
     }
 
     public void resetData(Object[] elements) {
