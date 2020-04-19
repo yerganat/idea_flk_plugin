@@ -1,13 +1,15 @@
 package kz.inessoft.sono.plugin.flk.dialog;
 
 import com.intellij.openapi.ui.DialogWrapper;
+import kz.inessoft.sono.plugin.flk.FormHandler;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-public class UtilityDialogWrapper extends DialogWrapper {
+public class UtilityDialog extends DialogWrapper {
+    public FormHandler formHandler = new FormHandler();
 
-    public UtilityDialogWrapper() {
+    public UtilityDialog() {
         super(true); // use current window as parent
         init();
         setTitle("Sono Flk Utility");
@@ -18,6 +20,6 @@ public class UtilityDialogWrapper extends DialogWrapper {
     @Nullable
     @Override
     protected JComponent createCenterPanel() {
-        return new JFlkConfigPanel();
+        return new JFlkConfigPanel(formHandler);
     }
 }

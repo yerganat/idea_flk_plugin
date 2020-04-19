@@ -4,8 +4,11 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.intellij.ui.JBColor;
 import com.jgoodies.forms.factories.*;
 import kz.inessoft.sono.plugin.flk.DataHandler;
+import kz.inessoft.sono.plugin.flk.FormHandler;
+import kz.inessoft.sono.plugin.flk.utils.Logic;
 import kz.inessoft.sono.plugin.flk.utils.Oper;
 import org.apache.commons.lang.StringUtils;
 
@@ -37,8 +40,9 @@ public class JFlkConfigPanel extends JPanel {
 	private JPanel addDependPanel;
 	private JLabel dependLabel;
 	private JSearchBox dependFieldComboBox;
+	private JComboBox logicComboBox;
 	private JButton addDependButton;
-	private JLabel exeptDieldLabel;
+	private JLabel exeptFieldLabel;
 	private JSearchBox exeptFieldComboBox;
 	private JButton exeptFieldButton;
     private JScrollPane addedDepenedScrollPane;
@@ -52,7 +56,10 @@ public class JFlkConfigPanel extends JPanel {
     private JScrollPane addedExprScrollPane1;
 	private JPanel addedExprPanel;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
-	public JFlkConfigPanel() {
+
+	FormHandler formHandler;
+	public JFlkConfigPanel(FormHandler formHandler) {
+		this.formHandler = formHandler;
 		initComponents();
 	}
 
@@ -72,8 +79,9 @@ public class JFlkConfigPanel extends JPanel {
 		addDependPanel = new JPanel();
 		dependLabel = new JLabel();
 		dependFieldComboBox = new JSearchBox(DataHandler.fields.keySet().toArray());
+		logicComboBox = new JComboBox(Logic.getValues(false));
 		addDependButton = new JButton();
-		exeptDieldLabel = new JLabel();
+		exeptFieldLabel = new JLabel();
 		exeptFieldComboBox = new JSearchBox();
 		exeptFieldButton = new JButton();
         addedDepenedScrollPane = new JScrollPane();
@@ -96,7 +104,7 @@ public class JFlkConfigPanel extends JPanel {
 			fieldPanel.setLayout(new BoxLayout(fieldPanel, BoxLayout.X_AXIS));
 
 			//---- mainFieldLabel ----
-			mainFieldLabel.setText("\u0424\u041b\u041a \u0434\u043b\u044f \u043f\u043e\u043b\u0435");
+			mainFieldLabel.setText("ФЛК для поле");
 			fieldPanel.add(mainFieldLabel);
 			fieldPanel.add(mainFieldComboBox);
 
@@ -138,7 +146,7 @@ public class JFlkConfigPanel extends JPanel {
 			//---- pageViewCheckBox ----
 				pageViewCheckBox.setText("*показать постранично(проверка заполненности приложении)");
 				pageViewCheckBox.setVerticalAlignment(SwingConstants.TOP);
-                pageViewCheckBox.addChangeListener(new ChangeListener() {
+				pageViewCheckBox.addChangeListener(new ChangeListener() {
                     @Override
                     public void stateChanged(ChangeEvent changeEvent) {
                         if(pageViewCheckBox.isSelected()) {
@@ -164,7 +172,6 @@ public class JFlkConfigPanel extends JPanel {
 				//---- dependLabel ----
 				dependLabel.setText("Поле");
 				addDependPanel.add(dependLabel);
-
 				dependFieldComboBox.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
@@ -178,14 +185,26 @@ public class JFlkConfigPanel extends JPanel {
                     }
                 });
 				addDependPanel.add(dependFieldComboBox);
+				addDependPanel.add(logicComboBox);
 
 				//---- addDependButton ----
 				addDependButton.setText("+");
+				addDependButton.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent actionEvent) {
+						formHandler.dependOnXmlFieldList.add((String) dependFieldComboBox.getSelectedItem());
+						formHandler.mainXmlField = (String) mainFieldComboBox.getSelectedItem();
+
+						repaintDepenedPanel();
+
+					}
+				});
 				addDependPanel.add(addDependButton);
 
+
 				//---- exeptDieldLabel ----
-				exeptDieldLabel.setText("исключить поле");
-				addDependPanel.add(exeptDieldLabel);
+				exeptFieldLabel.setText("исключить поле");
+				addDependPanel.add(exeptFieldLabel);
 				addDependPanel.add(exeptFieldComboBox);
 
 				//---- exeptFieldButton ----
@@ -252,6 +271,34 @@ public class JFlkConfigPanel extends JPanel {
 		add(exprPanel);
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 
+	}
+
+
+	private void repaintDepenedPanel() {
+		addedDependPanel.removeAll();
+
+		for (String dependOnField: formHandler.dependOnXmlFieldList) {
+			JPanel jPanelTmp = new JPanel();
+			jPanelTmp.setLayout(new BoxLayout(jPanelTmp, BoxLayout.X_AXIS));
+			jPanelTmp.add(new JLabel("Зависит от поле " + dependOnField));
+
+			JButton jRemoveButtonTmp = new JButton("Удалить " + dependOnField);
+			jRemoveButtonTmp.setForeground(JBColor.RED);
+			jRemoveButtonTmp.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent actionEvent) {
+					String removeField = jRemoveButtonTmp.getText().replace("Удалить ", "");
+					formHandler.dependOnXmlFieldList.remove(removeField);
+					repaintDepenedPanel();
+				}
+			});
+			jPanelTmp.add(jRemoveButtonTmp);
+
+			addedDependPanel.add(jPanelTmp);
+		}
+
+		addedDependPanel.revalidate();
+		addedDependPanel.repaint();
 	}
 
     static public JButton getJButton(JPanel p){

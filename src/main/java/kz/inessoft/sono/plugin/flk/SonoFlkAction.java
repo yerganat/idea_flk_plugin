@@ -10,14 +10,12 @@ import com.intellij.pom.Navigatable;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiTypesUtil;
-import kz.inessoft.sono.plugin.flk.dialog.UtilityDialogWrapper;
+import kz.inessoft.sono.plugin.flk.dialog.UtilityDialog;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Action class to demonstrate how to interact with the IntelliJ Platform.
@@ -66,13 +64,13 @@ public class SonoFlkAction extends AnAction {
             fillVariables(psiField.getType(), false, psiField.getName(), null);
         }
 
-        UtilityDialogWrapper dialogWrapper = new UtilityDialogWrapper();
-        if(!dialogWrapper.showAndGet()) {
+        UtilityDialog utilityDialog = new UtilityDialog();
+        if(!utilityDialog.showAndGet()) {
             return;
         }
 
         WriteCommandAction.runWriteCommandAction(element.getProject(), () ->{
-            SonoFlkUtility.generateCode(element);
+            CodeGenerator.generateCode(element, utilityDialog.formHandler);
 
         });
         // Using the event, create and show a dialog
@@ -119,17 +117,18 @@ public class SonoFlkAction extends AnAction {
             if (psiField.getAnnotations().length > 0 && psiField.getAnnotations()[0].getAttributes().size()>0)
                 xmlFieldName = ((JvmAnnotationConstantValue) psiField.getAnnotations()[0].getAttributes().get(0).getAttributeValue()).getConstantValue().toString();
 
-            DataHandler.PageInfo pageInfo = new DataHandler.PageInfo();
-            pageInfo.isFieldList = isFieldList;
-            pageInfo.isLocalVariable = isLocalVariable;
-            pageInfo.localVariableType = localVariableType;
-            pageInfo.xmlFieldName = xmlFieldName;
-            pageInfo.xmlPageName = xmlPageName;
-            pageInfo.pageField = psiField.getName();
-            pageInfo.variable = variableName;
+            DataHandler.FieldInfo fieldInfo = new DataHandler.FieldInfo();
+            fieldInfo.isVariablePageList = isFieldList;
+            fieldInfo.isLocalPageVariable = isLocalVariable;
+            fieldInfo.localPageVariableType = localVariableType;
+            fieldInfo.xmlFieldName = xmlFieldName;
+            fieldInfo.xmlPageName = xmlPageName;
+            fieldInfo.fieldProperty = psiField.getName();
+            fieldInfo.fieldType = psiField.getType().getCanonicalText();
+            fieldInfo.pageVariable = variableName;
 
             if(!DataHandler.fields.containsKey(xmlFieldName) || isLocalVariable)
-                DataHandler.fields.put(xmlFieldName, pageInfo);
+                DataHandler.fields.put(xmlFieldName, fieldInfo);
 
             pageFieldList.add(xmlFieldName);
         }
