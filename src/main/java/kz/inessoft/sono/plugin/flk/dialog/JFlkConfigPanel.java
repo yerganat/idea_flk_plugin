@@ -1,17 +1,17 @@
 package kz.inessoft.sono.plugin.flk.dialog;
 
 import javax.swing.*;
-import javax.swing.text.JTextComponent;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import com.jgoodies.forms.factories.*;
-import kz.inessoft.sono.plugin.flk.SonoFlkAction;
-import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
+import kz.inessoft.sono.plugin.flk.DataHandler;
+import kz.inessoft.sono.plugin.flk.utils.Oper;
+import org.apache.commons.lang.StringUtils;
 
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.util.function.BiFunction;
-import java.util.function.UnaryOperator;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 /*
  * Created by JFormDesigner on Sat Apr 18 15:57:46 ALMT 2020
  */
@@ -26,27 +26,27 @@ public class JFlkConfigPanel extends JPanel {
 	// Generated using JFormDesigner Evaluation license - MERZENTAY YERGANAT
 	private JPanel fieldPanel;
 	private JLabel mainFieldLabel;
-	private JComboBox mainFieldComboBox;
+	private JSearchBox mainFieldComboBox;
 	private JPanel requirementPanel;
 	private JRadioButton requiredRadioButton;
 	private JRadioButton conditionRequiredRadioButton;
 	private JPanel dependPanel;
 	private JPanel pagablePanel;
 	private JLabel dependOnLabel;
-	private JCheckBox oageViewCheckBox;
+	private JCheckBox pageViewCheckBox;
 	private JPanel addDependPanel;
 	private JLabel dependLabel;
-	private JComboBox dependFieldComboBox;
+	private JSearchBox dependFieldComboBox;
 	private JButton addDependButton;
 	private JLabel exeptDieldLabel;
-	private JComboBox expetFieldComboBox;
+	private JSearchBox exeptFieldComboBox;
 	private JButton exeptFieldButton;
     private JScrollPane addedDepenedScrollPane;
 	private JPanel addedDependPanel;
 	private JPanel exprPanel;
 	private JCheckBox exprCheckbox;
 	private JPanel panel9;
-	private JComboBox fieldComboBox;
+	private JSearchBox fieldComboBox;
 	private JComboBox operComboBox;
 	private JButton exprAddButton;
     private JScrollPane addedExprScrollPane1;
@@ -61,28 +61,28 @@ public class JFlkConfigPanel extends JPanel {
 		// Generated using JFormDesigner Evaluation license - MERZENTAY YERGANAT
 		fieldPanel = new JPanel();
 		mainFieldLabel = new JLabel();
-		mainFieldComboBox = new JSearchBox();
+		mainFieldComboBox = new JSearchBox(DataHandler.fields.keySet().toArray());
 		requirementPanel = new JPanel();
 		requiredRadioButton = new JRadioButton();
 		conditionRequiredRadioButton = new JRadioButton();
 		dependPanel = new JPanel();
 		pagablePanel = new JPanel();
 		dependOnLabel = new JLabel();
-		oageViewCheckBox = new JCheckBox();
+		pageViewCheckBox = new JCheckBox();
 		addDependPanel = new JPanel();
 		dependLabel = new JLabel();
-		dependFieldComboBox = new JSearchBox();
+		dependFieldComboBox = new JSearchBox(DataHandler.fields.keySet().toArray());
 		addDependButton = new JButton();
 		exeptDieldLabel = new JLabel();
-		expetFieldComboBox = new JSearchBox();
+		exeptFieldComboBox = new JSearchBox();
 		exeptFieldButton = new JButton();
         addedDepenedScrollPane = new JScrollPane();
 		addedDependPanel = new JPanel();
 		exprPanel = new JPanel();
 		exprCheckbox = new JCheckBox();
 		panel9 = new JPanel();
-		fieldComboBox = new JSearchBox();
-		operComboBox = new JSearchBox();
+		fieldComboBox = new JSearchBox(DataHandler.fields.keySet().toArray());
+		operComboBox = new JComboBox(Oper.getValues(false));
 		exprAddButton = new JButton();
         addedExprScrollPane1 = new JScrollPane();
 		addedExprPanel = new JPanel();
@@ -100,9 +100,6 @@ public class JFlkConfigPanel extends JPanel {
 			fieldPanel.add(mainFieldLabel);
 			fieldPanel.add(mainFieldComboBox);
 
-			for (String filed : SonoFlkAction.pagesInfo.keySet()) {
-				mainFieldComboBox.addItem(filed);
-			}
 			mainFieldComboBox.setEditable(true);
 			//AutoCompleteDecorator.decorate(mainFieldComboBox);
 		}
@@ -138,10 +135,25 @@ public class JFlkConfigPanel extends JPanel {
 				dependOnLabel.setText("Зависит от  полей:                 ");
 				pagablePanel.add(dependOnLabel);
 
-			//---- oageViewCheckBox ----
-				oageViewCheckBox.setText("*показать постранично(проверка заполненности приложении)");
-				oageViewCheckBox.setVerticalAlignment(SwingConstants.TOP);
-				pagablePanel.add(oageViewCheckBox);
+			//---- pageViewCheckBox ----
+				pageViewCheckBox.setText("*показать постранично(проверка заполненности приложении)");
+				pageViewCheckBox.setVerticalAlignment(SwingConstants.TOP);
+                pageViewCheckBox.addChangeListener(new ChangeListener() {
+                    @Override
+                    public void stateChanged(ChangeEvent changeEvent) {
+                        if(pageViewCheckBox.isSelected()) {
+                            dependFieldComboBox.resetData(DataHandler.pages.keySet().toArray());
+                            dependFieldComboBox.setEditable(false);
+                        } else {
+                            dependFieldComboBox.resetData(DataHandler.fields.keySet().toArray());
+                            dependFieldComboBox.setEditable(true);
+
+                            exeptFieldComboBox.resetData(new String[]{});
+                        }
+                    }
+                });
+
+				pagablePanel.add(pageViewCheckBox);
 			}
 			dependPanel.add(pagablePanel);
 
@@ -152,6 +164,19 @@ public class JFlkConfigPanel extends JPanel {
 				//---- dependLabel ----
 				dependLabel.setText("Поле");
 				addDependPanel.add(dependLabel);
+
+				dependFieldComboBox.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+                        String dependValue = (String) dependFieldComboBox.getSelectedItem();
+                        if(StringUtils.isNotBlank(dependValue)
+                                && pageViewCheckBox.isSelected()
+                                && DataHandler.pages.containsKey(dependValue)) {
+                            exeptFieldComboBox.resetData(DataHandler.pages.get(dependValue).toArray());
+                            exeptFieldComboBox.setEditable(false);
+                        }
+                    }
+                });
 				addDependPanel.add(dependFieldComboBox);
 
 				//---- addDependButton ----
@@ -161,7 +186,7 @@ public class JFlkConfigPanel extends JPanel {
 				//---- exeptDieldLabel ----
 				exeptDieldLabel.setText("исключить поле");
 				addDependPanel.add(exeptDieldLabel);
-				addDependPanel.add(expetFieldComboBox);
+				addDependPanel.add(exeptFieldComboBox);
 
 				//---- exeptFieldButton ----
 				exeptFieldButton.setText("-");

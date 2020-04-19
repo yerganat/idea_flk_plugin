@@ -11,9 +11,12 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiTypesUtil;
 import kz.inessoft.sono.plugin.flk.dialog.UtilityDialogWrapper;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,18 +26,6 @@ import java.util.Map;
  * in the plugin.xml file. But when added at runtime this class is instantiated by an action group.
  */
 public class SonoFlkAction extends AnAction {
-
-    public static Map<String, PageInfo> pagesInfo = new HashMap<>();
-
-    private static class PageInfo {
-        String xmlPageName;
-        String xmlFieldName;
-        String pageField;
-        String variable;
-        boolean isLocalVariable;
-        String localVariableType;
-        boolean isFieldList;
-    }
 
     @Override
     public void update(AnActionEvent e) {
@@ -120,12 +111,15 @@ public class SonoFlkAction extends AnAction {
         if (psiPageDeclaration.getAnnotations().length > 1)
             xmlPageName = ((JvmAnnotationConstantValue) psiPageDeclaration.getAnnotations()[1].getAttributes().get(0).getAttributeValue()).getConstantValue().toString();
 
+
+        List<String> pageFieldList = new ArrayList<>();
+
         for (PsiField psiField : psiPageDeclaration.getFields()) {
             String xmlFieldName = "";
             if (psiField.getAnnotations().length > 0 && psiField.getAnnotations()[0].getAttributes().size()>0)
                 xmlFieldName = ((JvmAnnotationConstantValue) psiField.getAnnotations()[0].getAttributes().get(0).getAttributeValue()).getConstantValue().toString();
 
-            PageInfo pageInfo = new PageInfo();
+            DataHandler.PageInfo pageInfo = new DataHandler.PageInfo();
             pageInfo.isFieldList = isFieldList;
             pageInfo.isLocalVariable = isLocalVariable;
             pageInfo.localVariableType = localVariableType;
@@ -134,9 +128,14 @@ public class SonoFlkAction extends AnAction {
             pageInfo.pageField = psiField.getName();
             pageInfo.variable = variableName;
 
-            if(!pagesInfo.containsKey(xmlFieldName) || isLocalVariable)
-                pagesInfo.put(xmlFieldName, pageInfo);
+            if(!DataHandler.fields.containsKey(xmlFieldName) || isLocalVariable)
+                DataHandler.fields.put(xmlFieldName, pageInfo);
+
+            pageFieldList.add(xmlFieldName);
         }
+
+        if(StringUtils.isNotBlank(xmlPageName))
+            DataHandler.pages.put(xmlPageName, pageFieldList);
     }
 
 }

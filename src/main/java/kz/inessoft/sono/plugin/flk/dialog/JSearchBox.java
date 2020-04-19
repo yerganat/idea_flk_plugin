@@ -39,6 +39,11 @@ public class JSearchBox extends JComboBox {
 
     private void init() {
         setEditable(true);
+
+    }
+
+    public void resetData(Object[] elements) {
+        super.setModel(new DefaultComboBoxModel(elements));
         setEditor(new SearchEditor(this));
     }
 
@@ -68,12 +73,12 @@ public class JSearchBox extends JComboBox {
                             (ev.getKeyChar() == KeyEvent.VK_ENTER)) {
                         String startText = editor.getText();
                         cb.showPopup();
-                        DefaultComboBoxModel<String> model2 = (DefaultComboBoxModel<String>) model;
-                        model2.removeAllElements();
+                        DefaultComboBoxModel<String> modelTmp = (DefaultComboBoxModel<String>) model;
+                        modelTmp.removeAllElements();
                         String firstElement = "";
-                        for (String item : SonoFlkAction.pagesInfo.keySet()) {
+                        for (String item : _data) {
                             if (item.toLowerCase().contains(startText.toLowerCase())) {
-                                model2.addElement(item);
+                                modelTmp.addElement(item);
                                 if(firstElement.isEmpty())
                                     firstElement = item;
                             }
