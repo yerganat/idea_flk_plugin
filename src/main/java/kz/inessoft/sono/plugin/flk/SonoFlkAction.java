@@ -10,7 +10,7 @@ import com.intellij.pom.Navigatable;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiTypesUtil;
-import kz.inessoft.sono.plugin.flk.dialog.SampleDialogWrapper;
+import kz.inessoft.sono.plugin.flk.dialog.UtilityDialogWrapper;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -75,7 +75,7 @@ public class SonoFlkAction extends AnAction {
             fillVariables(psiField.getType(), false, psiField.getName(), null);
         }
 
-        SampleDialogWrapper dialogWrapper = new SampleDialogWrapper();
+        UtilityDialogWrapper dialogWrapper = new UtilityDialogWrapper();
         if(!dialogWrapper.showAndGet()) {
             return;
         }

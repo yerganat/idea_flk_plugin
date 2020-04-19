@@ -96,26 +96,26 @@ public class JSearchableComboBox extends JComboBox {
             cb.addActionListener(actionListener);
         }
     }
-//
-//    public static void main(String[] args) {
-//        java.awt.Frame f = new java.awt.Frame();
-//
-//        f.addWindowListener(new java.awt.event.WindowAdapter() {
-//                                public void windowClosing(java.awt.event.WindowEvent ev) {
-//                                    System.exit(0);
-//                                }
-//                            }
-//        );
-//
-//        String[] stuff = new String[]{"first", "second", "second and some",
-//
-//                "third", "three", "three+", "thrice", "four", "four-plus"};
-//
-//        JSearchableComboBox cb = new JSearchableComboBox(stuff);
-//        f.add(cb);
-//        f.pack();
-//        f.show();
-//    }
+
+    public static void main(String[] args) {
+        java.awt.Frame f = new java.awt.Frame();
+
+        f.addWindowListener(new java.awt.event.WindowAdapter() {
+                                public void windowClosing(java.awt.event.WindowEvent ev) {
+                                    System.exit(0);
+                                }
+                            }
+        );
+
+        String[] stuff = new String[]{"first", "second", "second and some",
+
+                "third", "three", "three+", "thrice", "four", "four-plus"};
+
+        JSearchableComboBox cb = new JSearchableComboBox(stuff);
+        f.add(cb);
+        f.pack();
+        f.show();
+    }
 
 }
 

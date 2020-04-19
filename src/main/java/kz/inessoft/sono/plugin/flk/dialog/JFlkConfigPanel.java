@@ -43,6 +43,7 @@ public class JFlkConfigPanel extends JPanel {
 	private JLabel exeptDieldLabel;
 	private JComboBox expetFieldComboBox;
 	private JButton exeptFieldButton;
+    private JScrollPane addedDepenedScrollPane;
 	private JPanel addedDependPanel;
 	private JPanel exprPanel;
 	private JCheckBox exprCheckbox;
@@ -50,6 +51,7 @@ public class JFlkConfigPanel extends JPanel {
 	private JComboBox fieldComboBox;
 	private JComboBox operComboBox;
 	private JButton exprAddButton;
+    private JScrollPane addedExprScrollPane1;
 	private JPanel addedExprPanel;
 	// JFormDesigner - End of variables declaration  //GEN-END:variables
 	public JFlkConfigPanel() {
@@ -71,18 +73,20 @@ public class JFlkConfigPanel extends JPanel {
 		oageViewCheckBox = new JCheckBox();
 		addDependPanel = new JPanel();
 		dependLabel = new JLabel();
-		dependFieldComboBox = new JComboBox();
+		dependFieldComboBox = new JSearchBox();
 		addDependButton = new JButton();
 		exeptDieldLabel = new JLabel();
-		expetFieldComboBox = new JComboBox();
+		expetFieldComboBox = new JSearchBox();
 		exeptFieldButton = new JButton();
+        addedDepenedScrollPane = new JScrollPane();
 		addedDependPanel = new JPanel();
 		exprPanel = new JPanel();
 		exprCheckbox = new JCheckBox();
 		panel9 = new JPanel();
-		fieldComboBox = new JComboBox();
-		operComboBox = new JComboBox();
+		fieldComboBox = new JSearchBox();
+		operComboBox = new JSearchBox();
 		exprAddButton = new JButton();
+        addedExprScrollPane1 = new JScrollPane();
 		addedExprPanel = new JPanel();
 
 		//======== this ========
@@ -118,7 +122,10 @@ public class JFlkConfigPanel extends JPanel {
 			//---- conditionRequiredRadioButton ----
 			conditionRequiredRadioButton.setText("условно обязательный реквезит");
 			requirementPanel.add(conditionRequiredRadioButton);
-		}
+
+            ButtonGroup bg=new ButtonGroup();
+            bg.add(requiredRadioButton);bg.add(conditionRequiredRadioButton);
+        }
 		add(requirementPanel);
 
 		//======== dependPanel ========
@@ -145,7 +152,7 @@ public class JFlkConfigPanel extends JPanel {
 				addDependPanel.setLayout(new BoxLayout(addDependPanel, BoxLayout.X_AXIS));
 
 				//---- dependLabel ----
-				dependLabel.setText("\u041f\u043e\u043b\u0435");
+				dependLabel.setText("Поле");
 				addDependPanel.add(dependLabel);
 				addDependPanel.add(dependFieldComboBox);
 
@@ -164,11 +171,19 @@ public class JFlkConfigPanel extends JPanel {
 			}
 			dependPanel.add(addDependPanel);
 
-			//======== addedDependPanel ========
-			{
-				addedDependPanel.setLayout(new BoxLayout(addedDependPanel, BoxLayout.Y_AXIS));
-			}
-			dependPanel.add(addedDependPanel);
+            //======== addedDepenedScrollPane ========
+            {
+                //======== addedDepenedPanel ========
+                {
+                    addedDependPanel.setLayout(new BoxLayout(addedDependPanel, BoxLayout.Y_AXIS));
+                }
+                addedDepenedScrollPane.setViewportView(addedDependPanel);
+                addedDepenedScrollPane.setPreferredSize(new Dimension(300, 100));
+
+                addedDependPanel.add(getJButton(addedDependPanel));
+            }
+
+			dependPanel.add(addedDepenedScrollPane);
 		}
 		add(dependPanel);
 
@@ -198,13 +213,31 @@ public class JFlkConfigPanel extends JPanel {
 			}
 			exprPanel.add(panel9);
 
-			//======== addedExprPanel ========
-			{
-				addedExprPanel.setLayout(new BoxLayout(addedExprPanel, BoxLayout.Y_AXIS));
-			}
-			exprPanel.add(addedExprPanel);
+            //======== addedExprScrollPane1 ========
+            {
+
+                //======== addedExprPanel ========
+                {
+                    addedExprPanel.setLayout(new BoxLayout(addedExprPanel, BoxLayout.Y_AXIS));
+                }
+                addedExprScrollPane1.setViewportView(addedExprPanel);
+                addedExprScrollPane1.setPreferredSize(new Dimension(300, 100));
+            }
+
+			exprPanel.add(addedExprScrollPane1);
 		}
 		add(exprPanel);
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
+
 	}
+
+    static public JButton getJButton(JPanel p){
+        JButton b = new JButton("more");
+        b.addActionListener(evt->{
+            p.add(getJButton(p));
+            p.revalidate();
+            p.repaint();
+        });
+        return b;
+    }
 }
