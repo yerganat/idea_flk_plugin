@@ -5,8 +5,6 @@ import javax.swing.text.JTextComponent;
 
 import com.jgoodies.forms.factories.*;
 import kz.inessoft.sono.plugin.flk.SonoFlkAction;
-import kz.inessoft.sono.plugin.flk.dialog.combobox.ComboBoxFilterDecorator;
-import kz.inessoft.sono.plugin.flk.dialog.combobox.CustomComboRenderer;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 
 import java.awt.*;
