@@ -103,8 +103,9 @@ public class CodeGenerator {
     private static String variableExprStr(DataHandler.FieldInfo fieldInfo, boolean isDoubleExpr) {
         String pageVariableTmp = fieldInfo.isVariablePageList ? "p" : fieldInfo.pageVariable;
         String exprStr = (isDoubleExpr?"dv":"lv") + "(" + pageVariableTmp + "." + methodName(fieldInfo.fieldProperty, "get") + "())";
+
         if (fieldInfo.isVariablePageList) {
-            exprStr = "(" + fieldInfo.pageVariable + "!= null && " + fieldInfo.pageVariable + ".stream().anyMatch(p -> " + exprStr + "))";
+            exprStr = "(" + fieldInfo.pageVariable + "!= null ?" + fieldInfo.pageVariable + ".stream().filter(Objects::nonNull)."+(isDoubleExpr?"mapToDouble":"mapToLong")+"(p -> " + exprStr + ").sum():0L)";
         }
 
         return exprStr;
@@ -138,6 +139,8 @@ public class CodeGenerator {
         }
         sb.append(")");
         sb.append(addError(mainFieldInfo.xmlPageName, mainFieldInfo.xmlFieldName, "msgEmpty"));
+
+        sb.append("\n");
 
         //Выражение для вычсиления
         boolean isDoubleExpr = calcXmlFieldMap.keySet().stream()

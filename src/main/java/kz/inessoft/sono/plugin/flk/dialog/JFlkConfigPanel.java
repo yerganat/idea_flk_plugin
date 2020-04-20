@@ -237,7 +237,7 @@ public class JFlkConfigPanel extends JPanel {
 				addDependPanel.add(exeptFieldComboBox);
 
 				//---- exeptFieldButton ----
-				exeptFieldButton.setText("-");
+				exeptFieldButton.setText("+");
                 exeptFieldButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {

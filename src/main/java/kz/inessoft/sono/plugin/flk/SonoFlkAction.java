@@ -5,8 +5,6 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.Messages;
-import com.intellij.pom.Navigatable;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.util.PsiTypesUtil;
@@ -35,6 +33,8 @@ public class SonoFlkAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent event) {
         PsiFile psiFile = event.getData(CommonDataKeys.PSI_FILE);
+
+        if(psiFile == null) return;
 
         psiFile.accept(new JavaRecursiveElementVisitor() {
             @Override
