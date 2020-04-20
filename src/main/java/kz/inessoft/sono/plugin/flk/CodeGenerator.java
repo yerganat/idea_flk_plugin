@@ -20,6 +20,7 @@ public class CodeGenerator {
 
 
         List<String> dependOnXmlFieldList = formHandler.dependOnXmlFieldList;
+        dependOnXmlFieldList.removeAll(formHandler.excludeXmlFieldList);
         List<String> tmpPageFields = new ArrayList<>();
         List<String> tmpRemovePage = new ArrayList<>();
         for (String fld : dependOnXmlFieldList) {
@@ -31,12 +32,14 @@ public class CodeGenerator {
         dependOnXmlFieldList.removeAll(tmpRemovePage);
         dependOnXmlFieldList.addAll(tmpPageFields);
 
+        PsiMethod containingMethod = PsiTreeUtil.getParentOfType(psiElement, PsiMethod.class);
+
         if (containingClasee != null) {
-            document.insertString(containingClasee.getTextRange().getEndOffset() - 1, doFlkMethodDeclaration(formHandler.mainXmlField, dependOnXmlFieldList));
+            document.insertString(containingMethod.getTextRange().getEndOffset() + 1, doFlkMethodDeclaration(formHandler.mainXmlField, dependOnXmlFieldList));
+            // document.insertString(containingClasee.getTextRange().getEndOffset() - 1, doFlkMethodDeclaration(formHandler.mainXmlField, dependOnXmlFieldList));
             //document.insertString(containingClasee.getTextRange().getEndOffset() - 1, "\n public void generatedTest() {}\n");
         }
 
-        PsiMethod containingMethod = PsiTreeUtil.getParentOfType(psiElement, PsiMethod.class);
         if (containingMethod != null) {
             document.insertString(psiElement.getTextOffset(), doFlkMethodCall(formHandler.mainXmlField, dependOnXmlFieldList));
             //document.insertString(psiElement.getTextOffset(), "\nString generatedTest;");

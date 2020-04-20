@@ -15,6 +15,7 @@ import org.apache.commons.lang.StringUtils;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 /*
  * Created by JFormDesigner on Sat Apr 18 15:57:46 ALMT 2020
  */
@@ -106,10 +107,16 @@ public class JFlkConfigPanel extends JPanel {
 			//---- mainFieldLabel ----
 			mainFieldLabel.setText("ФЛК для поле");
 			fieldPanel.add(mainFieldLabel);
-			fieldPanel.add(mainFieldComboBox);
 
-			mainFieldComboBox.setEditable(true);
-			//AutoCompleteDecorator.decorate(mainFieldComboBox);
+            mainFieldComboBox.setEditable(true);
+            mainFieldComboBox.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent actionEvent) {
+                    formHandler.mainXmlField = (String) mainFieldComboBox.getSelectedItem();
+                }
+            });
+            fieldPanel.add(mainFieldComboBox);
+            //AutoCompleteDecorator.decorate(mainFieldComboBox);
 		}
 		add(fieldPanel);
 
@@ -127,7 +134,8 @@ public class JFlkConfigPanel extends JPanel {
 			requirementPanel.add(conditionRequiredRadioButton);
 
             ButtonGroup bg=new ButtonGroup();
-            bg.add(requiredRadioButton);bg.add(conditionRequiredRadioButton);
+            bg.add(requiredRadioButton);
+            bg.add(conditionRequiredRadioButton);
         }
 		add(requirementPanel);
 
@@ -192,32 +200,7 @@ public class JFlkConfigPanel extends JPanel {
 				addDependButton.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent actionEvent) {
-						formHandler.mainXmlField = (String) mainFieldComboBox.getSelectedItem();
-
-						String dependOnField = (String) dependFieldComboBox.getSelectedItem();
-						formHandler.dependOnXmlFieldList.add(dependOnField);
-
-						JPanel jPanelTmp = new JPanel();
-						jPanelTmp.setLayout(new BoxLayout(jPanelTmp, BoxLayout.X_AXIS));
-						jPanelTmp.add(new JLabel("Зависит от поле " + dependOnField));
-						jPanelTmp.setName((String) dependFieldComboBox.getSelectedItem());
-
-						JButton jRemoveButtonTmp = new JButton("-");
-						jRemoveButtonTmp.setForeground(JBColor.RED);
-						jRemoveButtonTmp.addActionListener(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent actionEvent) {
-								formHandler.dependOnXmlFieldList.remove(addedDependPanel.getName());
-								addedDependPanel.remove(jPanelTmp);
-								addedDependPanel.revalidate();
-								addedDependPanel.repaint();
-							}
-						});
-						jPanelTmp.add(jRemoveButtonTmp);
-
-						addedDependPanel.add(jPanelTmp);
-						addedDependPanel.revalidate();
-						addedDependPanel.repaint();
+						addDependedField((String) dependFieldComboBox.getSelectedItem(), formHandler.dependOnXmlFieldList, false);
 					}
 				});
 				addDependPanel.add(addDependButton);
@@ -230,6 +213,12 @@ public class JFlkConfigPanel extends JPanel {
 
 				//---- exeptFieldButton ----
 				exeptFieldButton.setText("-");
+                exeptFieldButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent actionEvent) {
+						addDependedField((String) exeptFieldComboBox.getSelectedItem(), formHandler.excludeXmlFieldList, true);
+                    }
+                });
 				addDependPanel.add(exeptFieldButton);
 			}
 			dependPanel.add(addDependPanel);
@@ -290,5 +279,32 @@ public class JFlkConfigPanel extends JPanel {
 		add(exprPanel);
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 
+	}
+
+	private void addDependedField(String fieldName, List<String> containerList, boolean exclude) {
+		containerList.add(fieldName);
+
+		JPanel jPanelTmp = new JPanel();
+		jPanelTmp.setLayout(new BoxLayout(jPanelTmp, BoxLayout.X_AXIS));
+		jPanelTmp.add(new JLabel((exclude?"исключить ":"зависит от ") + fieldName));
+		jPanelTmp.setName(fieldName);
+
+		JButton jRemoveButtonTmp = new JButton("-");
+		jRemoveButtonTmp.setForeground(JBColor.RED);
+		jRemoveButtonTmp.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent actionEvent) {
+				containerList.remove(jPanelTmp.getName());
+
+				addedDependPanel.remove(jPanelTmp);
+				addedDependPanel.revalidate();
+				addedDependPanel.repaint();
+			}
+		});
+		jPanelTmp.add(jRemoveButtonTmp);
+
+		addedDependPanel.add(jPanelTmp);
+		addedDependPanel.revalidate();
+		addedDependPanel.repaint();
 	}
 }

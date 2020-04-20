@@ -8,4 +8,5 @@ import java.util.Map;
 public class FormHandler {
     public String mainXmlField = "";
     public List<String> dependOnXmlFieldList = new ArrayList<>();
+    public List<String> excludeXmlFieldList = new ArrayList<>();
 }

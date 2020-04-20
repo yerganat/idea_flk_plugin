@@ -73,16 +73,7 @@ public class SonoFlkAction extends AnAction {
             CodeGenerator.generateCode(element, utilityDialog.formHandler);
 
         });
-        // Using the event, create and show a dialog
-        Project currentProject = event.getProject();
-        StringBuffer dlgMsg = new StringBuffer(event.getPresentation().getText() + " Selected!");
-        String dlgTitle = event.getPresentation().getDescription();
-        // If an element is selected in the editor, add info about it.
-        Navigatable nav = event.getData(CommonDataKeys.NAVIGATABLE);
-        if (nav != null) {
-            dlgMsg.append(String.format("\nSelected Element: %s", nav.toString()));
-        }
-        Messages.showMessageDialog(currentProject, dlgMsg.toString(), dlgTitle, Messages.getInformationIcon());
+
     }
 
     private static void fillVariables(PsiType psiType, boolean isLocalVariable, String variableName, String localVariableType) {
