@@ -5,8 +5,8 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import kz.inessoft.sono.plugin.flk.utils.PsiDocumentUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 public class CodeGenerator {
@@ -118,28 +118,25 @@ public class CodeGenerator {
     }
 
     private static String parameterListStr(List<String> localVarList, boolean withoutType) {
-        List<DataHandler.FieldInfo> fieldInfoList = localVarList.stream()
+        Set<String> set = new HashSet<>();
+        Map<String, DataHandler.FieldInfo> fieldInfoMap = localVarList.stream()
                 .filter(fld -> DataHandler.fields.get(fld).isLocalPageVariable)
                 .map(fld -> DataHandler.fields.get(fld))
-                .collect(Collectors.toList());
+                .collect(Collectors.toMap(DataHandler.FieldInfo::getPageVariable, UnaryOperator.identity(), (p, d) -> p));
 
-        List<String> skipVars = new ArrayList<>();
+        DataHandler.FieldInfo[] infos = fieldInfoMap.values().toArray(new DataHandler.FieldInfo[0]);
+
         StringBuilder prameterSb = new StringBuilder();
         prameterSb.append("(");
-        for (int i = 0; i < fieldInfoList.size(); i++) {
-            DataHandler.FieldInfo dfi = fieldInfoList.get(i);
-            if (!skipVars.contains(dfi.pageVariable) && dfi.isLocalPageVariable) {
-                if (!withoutType)
-                    prameterSb.append(dfi.localPageVariableType);
+        for (int i = 0; i < infos.length; i++) {
+            DataHandler.FieldInfo dfi = infos[i];
+            if (!withoutType)
+                prameterSb.append(dfi.localPageVariableType);
 
-                prameterSb.append(" ").append(dfi.pageVariable);
+            prameterSb.append(" ").append(dfi.pageVariable);
 
-                if (i != localVarList.size() - 1)
-                    prameterSb.append(" ,");
-
-                skipVars.add(dfi.pageVariable);
-            }
-
+            if (i != infos.length - 1)
+                prameterSb.append(" ,");
         }
 
         prameterSb.append(")");

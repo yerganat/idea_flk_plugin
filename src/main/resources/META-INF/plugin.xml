@@ -24,6 +24,7 @@
         <!-- Add your actions here -->
         <action id="kz.inessoft.sono.plugin.flk.SonoFlkAction" class="kz.inessoft.sono.plugin.flk.SonoFlkAction"
                 text="Sono Flk Utility" description="Sono Flk Utility">
+            <keyboard-shortcut first-keystroke="shift G" keymap="$default"/>
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>
     </actions>

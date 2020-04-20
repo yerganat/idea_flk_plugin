@@ -9,6 +9,8 @@ public enum Oper {
     MULTIPLAY("*"),
     DIVIDE("/"),
     PERSENT("%"),
+    LBRACKET("("),
+    RBRACKET(")"),
     IF_NOT_EQUAL("!=");
     String operator;
     Oper(String operator){

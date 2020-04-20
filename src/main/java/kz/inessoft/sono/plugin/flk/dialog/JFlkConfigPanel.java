@@ -185,18 +185,39 @@ public class JFlkConfigPanel extends JPanel {
                     }
                 });
 				addDependPanel.add(dependFieldComboBox);
-				addDependPanel.add(logicComboBox);
+				//addDependPanel.add(logicComboBox); TODO раскоменить  когда понадобиться
 
 				//---- addDependButton ----
 				addDependButton.setText("+");
 				addDependButton.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent actionEvent) {
-						formHandler.dependOnXmlFieldList.add((String) dependFieldComboBox.getSelectedItem());
 						formHandler.mainXmlField = (String) mainFieldComboBox.getSelectedItem();
 
-						repaintDepenedPanel();
+						String dependOnField = (String) dependFieldComboBox.getSelectedItem();
+						formHandler.dependOnXmlFieldList.add(dependOnField);
 
+						JPanel jPanelTmp = new JPanel();
+						jPanelTmp.setLayout(new BoxLayout(jPanelTmp, BoxLayout.X_AXIS));
+						jPanelTmp.add(new JLabel("Зависит от поле " + dependOnField));
+						jPanelTmp.setName((String) dependFieldComboBox.getSelectedItem());
+
+						JButton jRemoveButtonTmp = new JButton("-");
+						jRemoveButtonTmp.setForeground(JBColor.RED);
+						jRemoveButtonTmp.addActionListener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent actionEvent) {
+								formHandler.dependOnXmlFieldList.remove(addedDependPanel.getName());
+								addedDependPanel.remove(jPanelTmp);
+								addedDependPanel.revalidate();
+								addedDependPanel.repaint();
+							}
+						});
+						jPanelTmp.add(jRemoveButtonTmp);
+
+						addedDependPanel.add(jPanelTmp);
+						addedDependPanel.revalidate();
+						addedDependPanel.repaint();
 					}
 				});
 				addDependPanel.add(addDependButton);
@@ -221,8 +242,6 @@ public class JFlkConfigPanel extends JPanel {
                 }
                 addedDepenedScrollPane.setViewportView(addedDependPanel);
                 addedDepenedScrollPane.setPreferredSize(new Dimension(300, 100));
-
-                addedDependPanel.add(getJButton(addedDependPanel));
             }
 
 			dependPanel.add(addedDepenedScrollPane);
@@ -272,42 +291,4 @@ public class JFlkConfigPanel extends JPanel {
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 
 	}
-
-
-	private void repaintDepenedPanel() {
-		addedDependPanel.removeAll();
-
-		for (String dependOnField: formHandler.dependOnXmlFieldList) {
-			JPanel jPanelTmp = new JPanel();
-			jPanelTmp.setLayout(new BoxLayout(jPanelTmp, BoxLayout.X_AXIS));
-			jPanelTmp.add(new JLabel("Зависит от поле " + dependOnField));
-
-			JButton jRemoveButtonTmp = new JButton("Удалить " + dependOnField);
-			jRemoveButtonTmp.setForeground(JBColor.RED);
-			jRemoveButtonTmp.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent actionEvent) {
-					String removeField = jRemoveButtonTmp.getText().replace("Удалить ", "");
-					formHandler.dependOnXmlFieldList.remove(removeField);
-					repaintDepenedPanel();
-				}
-			});
-			jPanelTmp.add(jRemoveButtonTmp);
-
-			addedDependPanel.add(jPanelTmp);
-		}
-
-		addedDependPanel.revalidate();
-		addedDependPanel.repaint();
-	}
-
-    static public JButton getJButton(JPanel p){
-        JButton b = new JButton("more");
-        b.addActionListener(evt->{
-            p.add(getJButton(p));
-            p.revalidate();
-            p.repaint();
-        });
-        return b;
-    }
 }
