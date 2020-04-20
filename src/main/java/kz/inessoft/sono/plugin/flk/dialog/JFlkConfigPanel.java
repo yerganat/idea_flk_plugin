@@ -10,12 +10,17 @@ import kz.inessoft.sono.plugin.flk.DataHandler;
 import kz.inessoft.sono.plugin.flk.FormHandler;
 import kz.inessoft.sono.plugin.flk.utils.Logic;
 import kz.inessoft.sono.plugin.flk.utils.Oper;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 /*
  * Created by JFormDesigner on Sat Apr 18 15:57:46 ALMT 2020
  */
@@ -50,7 +55,7 @@ public class JFlkConfigPanel extends JPanel {
 	private JPanel addedDependPanel;
 	private JPanel exprPanel;
 	private JCheckBox exprCheckbox;
-	private JPanel panel9;
+	private JPanel exprInnerPanel;
 	private JSearchBox fieldComboBox;
 	private JComboBox operComboBox;
 	private JButton exprAddButton;
@@ -89,8 +94,8 @@ public class JFlkConfigPanel extends JPanel {
 		addedDependPanel = new JPanel();
 		exprPanel = new JPanel();
 		exprCheckbox = new JCheckBox();
-		panel9 = new JPanel();
-		fieldComboBox = new JSearchBox(DataHandler.fields.keySet().toArray());
+		exprInnerPanel = new JPanel();
+		fieldComboBox = new JSearchBox();
 		operComboBox = new JComboBox(Oper.getValues(false));
 		exprAddButton = new JButton();
         addedExprScrollPane1 = new JScrollPane();
@@ -113,6 +118,7 @@ public class JFlkConfigPanel extends JPanel {
                 @Override
                 public void actionPerformed(ActionEvent actionEvent) {
                     formHandler.mainXmlField = (String) mainFieldComboBox.getSelectedItem();
+					//fieldComboBox.resetData(ArrayUtils.addAll(new String[]{formHandler.mainXmlField}, formHandler.dependOnXmlFieldList.toArray()));
                 }
             });
             fieldPanel.add(mainFieldComboBox);
@@ -127,10 +133,26 @@ public class JFlkConfigPanel extends JPanel {
 			//---- requiredRadioButton ----
 			requiredRadioButton.setText("обязательный реквезит");
 			requiredRadioButton.setHorizontalAlignment(SwingConstants.LEFT);
+			requiredRadioButton.setSelected(true);
+			requiredRadioButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent actionEvent) {
+					formHandler.isMainOnlyRequired = requiredRadioButton.isSelected();
+					setPanelEnabled(dependPanel, !formHandler.isMainOnlyRequired);
+				}
+			});
 			requirementPanel.add(requiredRadioButton);
 
 			//---- conditionRequiredRadioButton ----
 			conditionRequiredRadioButton.setText("условно обязательный реквезит");
+			conditionRequiredRadioButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent actionEvent) {
+					formHandler.isMainOnlyRequired = requiredRadioButton.isSelected();
+					setPanelEnabled(dependPanel, !formHandler.isMainOnlyRequired);
+				}
+			});
+
 			requirementPanel.add(conditionRequiredRadioButton);
 
             ButtonGroup bg=new ButtonGroup();
@@ -160,6 +182,8 @@ public class JFlkConfigPanel extends JPanel {
                         if(pageViewCheckBox.isSelected()) {
                             dependFieldComboBox.resetData(DataHandler.pages.keySet().toArray());
                             dependFieldComboBox.setEditable(false);
+							exeptFieldComboBox.resetData(DataHandler.pages.get((String) dependFieldComboBox.getSelectedItem()).toArray());
+							exeptFieldComboBox.setEditable(false);
                         } else {
                             dependFieldComboBox.resetData(DataHandler.fields.keySet().toArray());
                             dependFieldComboBox.setEditable(true);
@@ -201,6 +225,7 @@ public class JFlkConfigPanel extends JPanel {
 					@Override
 					public void actionPerformed(ActionEvent actionEvent) {
 						addDependedField((String) dependFieldComboBox.getSelectedItem(), formHandler.dependOnXmlFieldList, false);
+						fieldComboBox.resetData(formHandler.dependOnXmlFieldList.toArray());
 					}
 				});
 				addDependPanel.add(addDependButton);
@@ -243,25 +268,67 @@ public class JFlkConfigPanel extends JPanel {
 
 			//---- exprCheckbox ----
 			exprCheckbox.setText("проверка выражения(если поле заполнено)");
+			exprCheckbox.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent actionEvent) {
+					if(exprCheckbox.isSelected()) {
+						formHandler.isHasCalculation = true;
+					} else {
+						formHandler.isHasCalculation = false;
+					}
+					setPanelEnabled(exprInnerPanel, formHandler.isHasCalculation);
+				}
+			});
+
 			exprPanel.add(exprCheckbox);
 
 			//======== panel9 ========
 			{
-				panel9.setLayout(new BoxLayout(panel9, BoxLayout.X_AXIS));
-
-				//---- fieldComboBox ----
-				fieldComboBox.setToolTipText("поле");
-				panel9.add(fieldComboBox);
+				exprInnerPanel.setLayout(new BoxLayout(exprInnerPanel, BoxLayout.X_AXIS));
 
 				//---- operComboBox ----
 				operComboBox.setToolTipText("операторы");
-				panel9.add(operComboBox);
+				exprInnerPanel.add(operComboBox);
+
+				//---- fieldComboBox ----
+				fieldComboBox.setToolTipText("поле");
+				fieldComboBox.setEditable(false);
+				exprInnerPanel.add(fieldComboBox);
 
 				//---- exprAddButton ----
 				exprAddButton.setText("+");
-				panel9.add(exprAddButton);
+				exprAddButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent actionEvent) {
+					formHandler.calcXmlFieldMap.put((String)fieldComboBox.getSelectedItem(), (String)operComboBox.getSelectedItem());
+
+					JPanel jPanelTmp = new JPanel();
+					jPanelTmp.setLayout(new BoxLayout(jPanelTmp, BoxLayout.X_AXIS));
+					jPanelTmp.add(new JLabel((String)operComboBox.getSelectedItem() + " " + (String)fieldComboBox.getSelectedItem()));
+					jPanelTmp.setName((String)fieldComboBox.getSelectedItem());
+
+					JButton jRemoveButtonTmp = new JButton("-");
+					jRemoveButtonTmp.setForeground(JBColor.RED);
+					jRemoveButtonTmp.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent actionEvent) {
+							formHandler.calcXmlFieldMap.remove(jPanelTmp.getName());
+
+							addedExprPanel.remove(jPanelTmp);
+							addedExprPanel.revalidate();
+							addedExprPanel.repaint();
+						}
+					});
+					jPanelTmp.add(jRemoveButtonTmp);
+
+					addedExprPanel.add(jPanelTmp);
+					addedExprPanel.revalidate();
+					addedExprPanel.repaint();
+				}
+			});
+				exprInnerPanel.add(exprAddButton);
 			}
-			exprPanel.add(panel9);
+			exprPanel.add(exprInnerPanel);
 
             //======== addedExprScrollPane1 ========
             {
@@ -279,9 +346,11 @@ public class JFlkConfigPanel extends JPanel {
 		add(exprPanel);
 		// JFormDesigner - End of component initialization  //GEN-END:initComponents
 
+		setPanelEnabled(dependPanel, false);
+		setPanelEnabled(exprInnerPanel, false);
 	}
 
-	private void addDependedField(String fieldName, List<String> containerList, boolean exclude) {
+	private void addDependedField(String fieldName, Set<String> containerList, boolean exclude) {
 		containerList.add(fieldName);
 
 		JPanel jPanelTmp = new JPanel();
@@ -299,6 +368,8 @@ public class JFlkConfigPanel extends JPanel {
 				addedDependPanel.remove(jPanelTmp);
 				addedDependPanel.revalidate();
 				addedDependPanel.repaint();
+
+				fieldComboBox.resetData(formHandler.dependOnXmlFieldList.toArray());
 			}
 		});
 		jPanelTmp.add(jRemoveButtonTmp);
@@ -306,5 +377,22 @@ public class JFlkConfigPanel extends JPanel {
 		addedDependPanel.add(jPanelTmp);
 		addedDependPanel.revalidate();
 		addedDependPanel.repaint();
+	}
+
+	private  void setPanelEnabled(Container container, Boolean isEnabled) {
+		container.setEnabled(isEnabled);
+
+		Component[] components = container.getComponents();
+
+		for (int i = 0; i < components.length; i++) {
+			if (components[i] instanceof java.awt.Container) {
+				setPanelEnabled((java.awt.Container) components[i], isEnabled);
+			}
+			components[i].setEnabled(isEnabled);
+		}
+	}
+
+	private void actions() {
+
 	}
 }

@@ -10,8 +10,8 @@ public enum Oper {
     DIVIDE("/"),
     PERSENT("%"),
     LBRACKET("("),
-    RBRACKET(")"),
-    IF_NOT_EQUAL("!=");
+    RBRACKET(")");
+    //IF_NOT_EQUAL("!=");
     String operator;
     Oper(String operator){
         this.operator = operator;
@@ -21,8 +21,8 @@ public enum Oper {
         List<String> valueList = new ArrayList<String>();
 
         for (Oper o: values() ) {
-            if(excludeNotEquality && IF_NOT_EQUAL.equals(o))
-                continue;
+//            if(excludeNotEquality && IF_NOT_EQUAL.equals(o))
+//                continue;
             valueList.add(o.operator);
         }
 

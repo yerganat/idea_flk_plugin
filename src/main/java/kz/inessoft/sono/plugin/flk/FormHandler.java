@@ -1,12 +1,14 @@
 package kz.inessoft.sono.plugin.flk;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FormHandler {
     public String mainXmlField = "";
-    public List<String> dependOnXmlFieldList = new ArrayList<>();
-    public List<String> excludeXmlFieldList = new ArrayList<>();
+    public boolean isMainOnlyRequired = false;
+    public Set<String> dependOnXmlFieldList = new HashSet<>();
+    public Set<String> excludeXmlFieldList = new HashSet<>();
+
+    public boolean isHasCalculation = false;
+    public Map<String, String> calcXmlFieldMap = new HashMap<>();
+
 }
