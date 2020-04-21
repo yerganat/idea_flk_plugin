@@ -116,12 +116,12 @@ public class CodeGenerator {
         }
 
         if (pageListVariableMap.size()>0) {
-            if(checkStringSb.length() > 0){
+            if(checkStringSb.length() > 0 && checkStringSb.charAt(checkStringSb.length()-2) != '|'){
                 checkStringSb.append(" \n|| ");
             }
             int i =0;
             for (String listPageVar : pageListVariableMap.keySet()) {
-                checkStringSb.append("(" + listPageVar+ "!= null && " + listPageVar + ".stream().anyMatch(p -> " + String.join(" \n|| ", pageListVariableMap.get(listPageVar)) + "))");
+                checkStringSb.append("(" + listPageVar+ "!= null && " + listPageVar + ".stream().anyMatch(p -> " + String.join(" || ", pageListVariableMap.get(listPageVar)) + "))");
 
                 i++;
                 if (i != pageListVariableMap.size())  {
