@@ -326,6 +326,9 @@ public class JFlkConfigPanel extends JPanel {
 					addedExprPanel.add(jPanelTmp);
 					addedExprPanel.revalidate();
 					addedExprPanel.repaint();
+
+					JScrollBar toBottom = addedExprScrollPane1.getVerticalScrollBar();
+					toBottom.setValue(toBottom.getMaximum() );
 				}
 			});
 				exprInnerPanel.add(exprAddButton);
@@ -379,6 +382,9 @@ public class JFlkConfigPanel extends JPanel {
 		addedDependPanel.add(jPanelTmp);
 		addedDependPanel.revalidate();
 		addedDependPanel.repaint();
+
+		JScrollBar toBottom = addedDepenedScrollPane.getVerticalScrollBar();
+		toBottom.setValue(toBottom.getMaximum() );
 	}
 
 	private  void setPanelEnabled(Container container, Boolean isEnabled) {
