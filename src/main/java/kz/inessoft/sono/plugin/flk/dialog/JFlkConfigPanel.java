@@ -182,9 +182,11 @@ public class JFlkConfigPanel extends JPanel {
                         if(pageViewCheckBox.isSelected()) {
                             dependFieldComboBox.resetData(DataHandler.pages.keySet().toArray());
                             dependFieldComboBox.setEditable(false);
-							exeptFieldComboBox.resetData(DataHandler.pages.get((String) dependFieldComboBox.getSelectedItem()).toArray());
 							exeptFieldComboBox.setEditable(false);
-                        } else {
+
+							if(StringUtils.isNotBlank((String) dependFieldComboBox.getSelectedItem()))
+								exeptFieldComboBox.resetData(DataHandler.pages.get((String) dependFieldComboBox.getSelectedItem()).toArray());
+						} else {
                             dependFieldComboBox.resetData(DataHandler.fields.keySet().toArray());
                             dependFieldComboBox.setEditable(true);
 
@@ -225,7 +227,7 @@ public class JFlkConfigPanel extends JPanel {
 					@Override
 					public void actionPerformed(ActionEvent actionEvent) {
 						addDependedField((String) dependFieldComboBox.getSelectedItem(), formHandler.dependOnXmlFieldList, false);
-						fieldComboBox.resetData(formHandler.dependOnXmlFieldList.toArray());
+						fieldComboBox.resetData(formHandler.dependOnXmlFieldList.stream().filter(p-> !p.startsWith("page")).toArray());
 					}
 				});
 				addDependPanel.add(addDependButton);

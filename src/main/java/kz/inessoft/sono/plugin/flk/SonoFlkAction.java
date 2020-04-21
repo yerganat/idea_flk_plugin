@@ -36,6 +36,8 @@ public class SonoFlkAction extends AnAction {
 
         if(psiFile == null) return;
 
+        DataHandler.reset();
+
         psiFile.accept(new JavaRecursiveElementVisitor() {
             @Override
             public void visitLocalVariable(PsiLocalVariable variable) {
@@ -101,12 +103,16 @@ public class SonoFlkAction extends AnAction {
             xmlPageName = ((JvmAnnotationConstantValue) psiPageDeclaration.getAnnotations()[1].getAttributes().get(0).getAttributeValue()).getConstantValue().toString();
 
 
+        if(StringUtils.isBlank(xmlPageName)) return;
+
         List<String> pageFieldList = new ArrayList<>();
 
         for (PsiField psiField : psiPageDeclaration.getFields()) {
             String xmlFieldName = "";
             if (psiField.getAnnotations().length > 0 && psiField.getAnnotations()[0].getAttributes().size()>0)
                 xmlFieldName = ((JvmAnnotationConstantValue) psiField.getAnnotations()[0].getAttributes().get(0).getAttributeValue()).getConstantValue().toString();
+
+            if(StringUtils.isBlank(xmlFieldName)) continue;
 
             DataHandler.FieldInfo fieldInfo = new DataHandler.FieldInfo();
             fieldInfo.isVariablePageList = isFieldList;

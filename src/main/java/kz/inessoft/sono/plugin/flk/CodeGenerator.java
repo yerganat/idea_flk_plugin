@@ -4,6 +4,7 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import kz.inessoft.sono.plugin.flk.utils.PsiDocumentUtils;
+import org.apache.commons.lang.WordUtils;
 
 import java.util.*;
 import java.util.function.UnaryOperator;
@@ -21,22 +22,26 @@ public class CodeGenerator {
 
         List<String> dependOnXmlFieldList = new ArrayList<>();
 
+        Map<String, List<String>> pageFilledFieldsMap = new HashMap<>();
+        List<String> pageFieldList = new ArrayList<>();
+
         if (!formHandler.isMainOnlyRequired) {
             dependOnXmlFieldList.addAll(formHandler.dependOnXmlFieldList);
-            dependOnXmlFieldList.removeAll(formHandler.excludeXmlFieldList);
-            List<String> tmpPageFields = new ArrayList<>();
-            List<String> tmpRemovePage = new ArrayList<>();
+            List<String> fieldsToRemove = new ArrayList<>();
             for (String fld : dependOnXmlFieldList) {
                 if (DataHandler.pages.containsKey(fld)) {
-                    tmpPageFields.addAll(DataHandler.pages.get(fld));
+                    List<String> pageFieldsList = new ArrayList<>(DataHandler.pages.get(fld));
+                    pageFieldsList.removeAll(formHandler.excludeXmlFieldList);
+                    pageFilledFieldsMap.put(fld, new ArrayList<>(pageFieldsList));
+                    pageFieldList.addAll(pageFieldsList);
                 }
 
                 if (!DataHandler.fields.containsKey(fld)) {
-                    tmpRemovePage.add(fld);
+                    fieldsToRemove.add(fld);
                 }
             }
-            dependOnXmlFieldList.removeAll(tmpRemovePage);
-            dependOnXmlFieldList.addAll(tmpPageFields);
+
+            dependOnXmlFieldList.removeAll(fieldsToRemove);
         }
 
 
@@ -55,11 +60,12 @@ public class CodeGenerator {
 
         if (containingClasee != null) {
             //containingClasee.getTextRange().getEndOffset() - 1  TODO если генерировать в конце класса, но не уобно
-            document.insertString(containingMethod.getTextRange().getEndOffset() + 1, doFlkMethodDeclaration(formHandler.mainXmlField, dependOnXmlFieldList, calcXmlFieldMap));
+            document.insertString(containingMethod.getTextRange().getEndOffset() + 1,
+                    doFlkMethodDeclaration(formHandler.mainXmlField, dependOnXmlFieldList, calcXmlFieldMap, pageFilledFieldsMap, pageFieldList));
         }
 
         if (containingMethod != null) {
-            document.insertString(psiElement.getTextOffset(), doFlkMethodCall(formHandler.mainXmlField, dependOnXmlFieldList));
+            document.insertString(psiElement.getTextOffset(), doFlkMethodCall(formHandler.mainXmlField, dependOnXmlFieldList, pageFieldList));
         }
 
         PsiDocumentUtils.commitAndSaveDocument(psiDocumentManager, document);
@@ -110,23 +116,57 @@ public class CodeGenerator {
 
         return exprStr;
     }
-    private static String doFlkMethodCall(String flkCheckXmlField, List<String> dependOnXmlFieldList) {
+    private static String doFlkMethodCall(String flkCheckXmlField, List<String> dependOnXmlFieldList, List<String> pageFieldList) {
         DataHandler.FieldInfo fieldInfo = DataHandler.fields.get(flkCheckXmlField);
-        return methodName(fieldInfo.fieldProperty, "doFlk") + parameterListStr(dependOnXmlFieldList, true) + ";";
+        return methodName(fieldInfo.fieldProperty, "doFlk") + parameterListStr(dependOnXmlFieldList, pageFieldList, true) + ";";
     }
 
-    private static String doFlkMethodDeclaration(String xmlField, List<String> dependOnXmlFieldList, Map<String, String> calcXmlFieldMap) {
+    private static String doFlkMethodDeclaration(String xmlField,
+                                                 List<String> dependOnXmlFieldList,
+                                                 Map<String, String> calcXmlFieldMap,
+                                                 Map<String, List<String>> pageFilledFieldsMap,
+                                                 List<String> pageFieldList) {
         DataHandler.FieldInfo mainFieldInfo = DataHandler.fields.get(xmlField);
 
         StringBuilder sb = new StringBuilder();
         sb.append("\n//").append(mainFieldInfo.xmlPageName).append(".").append(mainFieldInfo.xmlFieldName).append("\n");
         sb.append("private void ").append(methodName(mainFieldInfo.fieldProperty, "doFlk"));
 
-        sb.append(parameterListStr(dependOnXmlFieldList, false)).append("{\n");
+        sb.append(parameterListStr(dependOnXmlFieldList, pageFieldList, false)).append("{\n");
 
-        //условия не отсутствие
+
+        //проверка на заполнненость страницы
+        StringBuilder pageCheckerSb = new StringBuilder();
+        List<String> pageCheckVarList = new ArrayList<>();
+        for (String page: pageFilledFieldsMap.keySet()) {
+            String pageVar =  "isFilled" + WordUtils.capitalizeFully(page, new char[]{'_'}).replaceAll("_", "");
+            pageCheckVarList.add(pageVar);
+            pageCheckerSb.append("boolean ").append(pageVar).append(" =");
+
+            List<String> pageFields = DataHandler.pages.get(page);
+            for (int i = 0; i < pageFields.size(); i++) {
+                pageCheckerSb.append(checkFilledStr(DataHandler.fields.get(pageFields.get(i)), true));
+
+                if (i == pageFields.size() - 1) {
+                    pageCheckerSb.append(";\n");
+                } else {
+                    pageCheckerSb.append(" \n|| ");
+                }
+            }
+        }
+
+        sb.append(pageCheckerSb);
+
+        //условия на отсутствие
         sb.append("if(").append(checkFilledStr(mainFieldInfo, false));
         StringBuilder conditionSb = new StringBuilder();
+
+        for (int i = 0; i < pageCheckVarList.size(); i++) {
+            conditionSb.append(pageCheckVarList.get(i));
+
+            if (i != pageCheckVarList.size() - 1 || dependOnXmlFieldList.size() > 0)
+                conditionSb.append(" \n|| ");
+        }
         for (int i = 0; i < dependOnXmlFieldList.size(); i++) {
             conditionSb.append(checkFilledStr(DataHandler.fields.get(dependOnXmlFieldList.get(i)), true));
 
@@ -193,9 +233,13 @@ public class CodeGenerator {
         return sb.toString();
     }
 
-    private static String parameterListStr(List<String> localVarList, boolean withoutType) {
-        Set<String> set = new HashSet<>();
-        Map<String, DataHandler.FieldInfo> fieldInfoMap = localVarList.stream()
+    private static String parameterListStr(List<String> dependOnXmlFieldList, List<String> pageFieldList, boolean withoutType) {
+
+        List<String> tmpList = new ArrayList<>();
+        tmpList.addAll(dependOnXmlFieldList);
+        tmpList.addAll(pageFieldList);
+
+        Map<String, DataHandler.FieldInfo> fieldInfoMap = tmpList.stream()
                 .filter(fld -> DataHandler.fields.get(fld).isLocalPageVariable)
                 .map(fld -> DataHandler.fields.get(fld))
                 .collect(Collectors.toMap(DataHandler.FieldInfo::getPageVariable, UnaryOperator.identity(), (p, d) -> p));

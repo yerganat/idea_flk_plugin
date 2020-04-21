@@ -39,12 +39,13 @@ public class JSearchBox extends JComboBox {
 
     private void init() {
         setEditable(true);
+        setSelectedItem("");
         setEditor(new SearchEditor(this));
     }
 
     public void resetData(Object[] elements) {
         super.setModel(new DefaultComboBoxModel(elements));
-        setEditor(new SearchEditor(this));
+        init();
     }
 
     private static class SearchEditor extends BasicComboBoxEditor {

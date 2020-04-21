@@ -9,6 +9,11 @@ public class DataHandler {
     public static Map<String, FieldInfo> fields = new HashMap<>();
     public static Map<String, List<String>> pages = new HashMap<>();
 
+    public static void reset() {
+        fields = new HashMap<>();
+        pages = new HashMap<>();
+    }
+
     public static class FieldInfo {
         String xmlPageName; //page_100_00_06
         String xmlFieldName; //field_100_00_050
