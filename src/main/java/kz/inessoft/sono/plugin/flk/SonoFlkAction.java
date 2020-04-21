@@ -111,12 +111,14 @@ public class SonoFlkAction extends AnAction {
 
         for (PsiField psiField : psiPageDeclaration.getFields()) {
             String xmlFieldName = "";
-            if (psiField.getAnnotations().length > 0 && psiField.getAnnotations()[0].getAttributes().size()>0)
-                xmlFieldName = ((JvmAnnotationConstantValue) psiField.getAnnotations()[0].getAttributes().get(0).getAttributeValue()).getConstantValue().toString();
+            if (psiField.getAnnotations().length > 0 && psiField.getAnnotations()[0].getAttributes().size()>0) {
+                String annotateName = psiField.getAnnotations()[0].getAttributes().get(0).getAttributeName();
+                if(annotateName.equals("name"))
+                    xmlFieldName = ((JvmAnnotationConstantValue) psiField.getAnnotations()[0].getAttributes().get(0).getAttributeValue()).getConstantValue().toString();
+            }
 
+            xmlFieldName = StringUtils.isBlank(xmlFieldName) ? psiField.getName():xmlFieldName; //Если нат аннотациии
             xmlFieldName = xmlFieldName.startsWith("field")?xmlFieldName.replace("_", "."):xmlFieldName;
-
-            if(StringUtils.isBlank(xmlFieldName)) continue;
 
             DataHandler.FieldInfo fieldInfo = new DataHandler.FieldInfo();
             fieldInfo.isVariablePageList = isFieldList;

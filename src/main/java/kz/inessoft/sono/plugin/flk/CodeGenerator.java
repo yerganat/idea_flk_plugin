@@ -81,29 +81,81 @@ public class CodeGenerator {
     }
 
     private static String checkFilledStr(DataHandler.FieldInfo fieldInfo, boolean filled) {
-        String pageVariableTmp = fieldInfo.isVariablePageList ? "p" : fieldInfo.pageVariable;
-        String checkString = "";
-        switch (fieldInfo.fieldType) {
-            case "java.lang.String":
-                checkString = "StringUtils." + (filled ? "isNotBlank" : "isBlank")
-                        + "(" + pageVariableTmp + "." + methodName(fieldInfo.fieldProperty, "get") + "())";
-                break;
-            case "java.lang.Boolean":
-            case "boolean":
-                checkString = "BooleanUtils." + (filled ? "isTrue" : "isNotTrue")
-                        + "(" + pageVariableTmp + "." + methodName(fieldInfo.fieldProperty, "is") + "())";
-                break;
-            default:
-                checkString = pageVariableTmp + "."
-                        + methodName(fieldInfo.fieldProperty, "get") + "()" + (filled ? "!=" : "==") + " null";
-                break;
-        }
+        String checkString = filledStr(fieldInfo, filled);
 
         if (fieldInfo.isVariablePageList) {
             checkString = "(" + fieldInfo.pageVariable + "!= null && " + fieldInfo.pageVariable + ".stream().anyMatch(p -> " + checkString + "))";
         }
 
         return checkString;
+    }
+
+    //отличне от метода checkFilledStr в том что здесь List  параметр объеденяется в один цикл
+    private static String checkFilledStrList(List<String> xmlFieldInfoList, boolean filled, boolean isForPageCheck) {
+        Map<String, List<String>> pageListVariableMap = new TreeMap<>();
+        StringBuilder checkStringSb = new StringBuilder();
+        for (int i = 0; i < xmlFieldInfoList.size(); i++) {
+            DataHandler.FieldInfo fieldInfo = DataHandler.fields.get(xmlFieldInfoList.get(i));
+
+            String checkStrForOne = filledStr(fieldInfo, filled);
+            if(fieldInfo.isVariablePageList) {
+                if(!pageListVariableMap.containsKey(fieldInfo.pageVariable )) {
+                    List<String> stringList = new ArrayList<>();
+                    stringList.add(checkStrForOne);
+                    pageListVariableMap.put(fieldInfo.pageVariable , new ArrayList<>(stringList));
+                } else {
+                    pageListVariableMap.get(fieldInfo.pageVariable).add(checkStrForOne);
+                }
+            } else {
+                checkStringSb.append(checkStrForOne);
+
+                if (i != xmlFieldInfoList.size() - 1)  {
+                    checkStringSb.append(" \n|| ");
+                }
+            }
+        }
+
+        if (pageListVariableMap.size()>0) {
+            if(checkStringSb.length() > 0){
+                checkStringSb.append(" \n|| ");
+            }
+            int i =0;
+            for (String listPageVar : pageListVariableMap.keySet()) {
+                checkStringSb.append("(" + listPageVar+ "!= null && " + listPageVar + ".stream().anyMatch(p -> " + String.join(" \n|| ", pageListVariableMap.get(listPageVar)) + "))");
+
+                i++;
+                if (i != pageListVariableMap.size())  {
+                    checkStringSb.append(" \n|| ");
+                }
+            }
+        }
+
+        if(isForPageCheck)
+            checkStringSb.append(";\n");
+
+        return checkStringSb.toString();
+    }
+
+    private static String filledStr(DataHandler.FieldInfo fieldInfo, boolean filled) {
+        String pageVariableTmp = fieldInfo.isVariablePageList ? "p" : fieldInfo.pageVariable;
+        String filledStr = "";
+        switch (fieldInfo.fieldType) {
+            case "java.lang.String":
+                filledStr = "StringUtils." + (filled ? "isNotBlank" : "isBlank")
+                        + "(" + pageVariableTmp + "." + methodName(fieldInfo.fieldProperty, "get") + "())";
+                break;
+            case "java.lang.Boolean":
+            case "boolean":
+                filledStr = "BooleanUtils." + (filled ? "isTrue" : "isNotTrue")
+                        + "(" + pageVariableTmp + "." + methodName(fieldInfo.fieldProperty, "is") + "())";
+                break;
+            default:
+                filledStr = pageVariableTmp + "."
+                        + methodName(fieldInfo.fieldProperty, "get") + "()" + (filled ? "!=" : "==") + " null";
+                break;
+        }
+
+        return filledStr;
     }
 
     private static String variableExprStr(DataHandler.FieldInfo fieldInfo, boolean isDoubleExpr) {
@@ -144,20 +196,22 @@ public class CodeGenerator {
             pageCheckerSb.append("boolean ").append(pageVar).append(" =");
 
             List<String> pageFields = DataHandler.pages.get(page);
-            for (int i = 0; i < pageFields.size(); i++) {
-                pageCheckerSb.append(checkFilledStr(DataHandler.fields.get(pageFields.get(i)), true));
 
-                if (i == pageFields.size() - 1) {
-                    pageCheckerSb.append(";\n");
-                } else {
-                    pageCheckerSb.append(" \n|| ");
-                }
-            }
+            pageCheckerSb.append(checkFilledStrList(pageFields, true, true));
+//            for (int i = 0; i < pageFields.size(); i++) {
+//                pageCheckerSb.append(checkFilledStr(DataHandler.fields.get(pageFields.get(i)), true));
+//
+//                if (i == pageFields.size() - 1) {
+//                    pageCheckerSb.append(";\n");
+//                } else {
+//                    pageCheckerSb.append(" \n|| ");
+//                }
+//            }
         }
 
         sb.append(pageCheckerSb);
 
-        //условия на отсутствие
+        //условия на отсутствие поля
         sb.append("if(").append(checkFilledStr(mainFieldInfo, false));
         StringBuilder conditionSb = new StringBuilder();
 
@@ -167,12 +221,15 @@ public class CodeGenerator {
             if (i != pageCheckVarList.size() - 1 || dependOnXmlFieldList.size() > 0)
                 conditionSb.append(" \n|| ");
         }
-        for (int i = 0; i < dependOnXmlFieldList.size(); i++) {
-            conditionSb.append(checkFilledStr(DataHandler.fields.get(dependOnXmlFieldList.get(i)), true));
 
-            if (i != dependOnXmlFieldList.size() - 1)
-                conditionSb.append(" \n|| ");
-        }
+        conditionSb.append(checkFilledStrList(dependOnXmlFieldList, true, false));
+
+//        for (int i = 0; i < dependOnXmlFieldList.size(); i++) {
+//            conditionSb.append(checkFilledStr(DataHandler.fields.get(dependOnXmlFieldList.get(i)), true));
+//
+//            if (i != dependOnXmlFieldList.size() - 1)
+//                conditionSb.append(" \n|| ");
+//        }
 
         if (conditionSb.length() > 0) {
             sb.append(" \n&& (").append(conditionSb).append(")");
