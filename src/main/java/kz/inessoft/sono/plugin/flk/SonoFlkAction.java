@@ -120,6 +120,7 @@ public class SonoFlkAction extends AnAction {
                         rowInfo.xmlPageName = xmlPageName;
                         rowInfo.fieldProperty = psiPageRowField.getName();
                         rowInfo.fieldType = psiPageRowField.getType().getCanonicalText();
+                        rowInfo.isRowInfo = true;
 
                         pageRowInfoList.add(rowInfo);
                     }

@@ -105,7 +105,7 @@ public class CodeGenerator {
                     for (DataHandler.FieldInfo rowInfo : DataHandler.rows.get(fieldInfo.xmlPageName + "row")) {
                         rowCheckList.add(filledStr(rowInfo, filled));
                     }
-                    checkStrForOneSb.append("(").append("p.getRow() != null && ").append("p.getRow().stream().anyMatch(p -> ").append(String.join(" || ", rowCheckList)).append("))");
+                    checkStrForOneSb.append("(").append("p.getRow() != null && ").append("p.getRow().stream().anyMatch(r -> ").append(String.join(" || ", rowCheckList)).append("))");
                 } else {
                     checkStrForOneSb.append(filledStr(fieldInfo, filled));
                 }
@@ -148,7 +148,7 @@ public class CodeGenerator {
     }
 
     private static String filledStr(DataHandler.FieldInfo fieldInfo, boolean filled) {
-        String pageVariableTmp = fieldInfo.isVariablePageList ? "p" : fieldInfo.pageVariable;
+        String pageVariableTmp = fieldInfo.isRowInfo?"r":(fieldInfo.isVariablePageList ? "p" : fieldInfo.pageVariable);
         StringBuilder filledStr = new StringBuilder();
         switch (fieldInfo.fieldType) {
             case "java.lang.String":

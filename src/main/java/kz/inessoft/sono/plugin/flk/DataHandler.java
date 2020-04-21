@@ -24,6 +24,7 @@ public class DataHandler {
         boolean isLocalPageVariable;
         String localPageVariableType; //Page1000001
         boolean isVariablePageList; //page1000601List
+        boolean isRowInfo; //page1000601List
 
         public String getPageVariable() {
             return pageVariable;
