@@ -59,7 +59,7 @@ public class CodeGenerator {
         PsiMethod containingMethod = PsiTreeUtil.getParentOfType(psiElement, PsiMethod.class);
 
         if (containingClasee != null) {
-            //containingClasee.getTextRange().getEndOffset() - 1  TODO если генерировать в конце класса, но не уобно
+            //containingClasee.getTextRange().getEndOffset() - 1  TODO если генерировать в конце класса, но не удобно
             document.insertString(containingMethod.getTextRange().getEndOffset() + 1,
                     doFlkMethodDeclaration(formHandler.mainXmlField, dependOnXmlFieldList, calcXmlFieldMap, pageFilledFieldsMap, pageFieldList));
         }
@@ -77,7 +77,7 @@ public class CodeGenerator {
     }
 
     private static String addError(String xmlPageName, String xmlFieldName, String msg) {
-        return "\naddError(FORM_NAME, null, \"" + xmlPageName + "\", null, \"" + xmlFieldName + "\", \"" + msg + "\");";
+        return "\naddError(FORM_NAME, null, \"" + xmlPageName.replace(".", "_") + "\", null, \"" + xmlFieldName.replace(".", "_") + "\", \"" + msg + "\");";
     }
 
     private static String checkFilledStr(DataHandler.FieldInfo fieldInfo, boolean filled) {
@@ -139,7 +139,7 @@ public class CodeGenerator {
         StringBuilder pageCheckerSb = new StringBuilder();
         List<String> pageCheckVarList = new ArrayList<>();
         for (String page: pageFilledFieldsMap.keySet()) {
-            String pageVar =  "isFilled" + WordUtils.capitalizeFully(page, new char[]{'_'}).replaceAll("_", "");
+            String pageVar =  "isFilled" + WordUtils.capitalizeFully(page, new char[]{'.'}).replaceAll("\\.", "");
             pageCheckVarList.add(pageVar);
             pageCheckerSb.append("boolean ").append(pageVar).append(" =");
 

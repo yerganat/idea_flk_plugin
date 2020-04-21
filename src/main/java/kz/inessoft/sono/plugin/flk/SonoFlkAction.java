@@ -102,8 +102,10 @@ public class SonoFlkAction extends AnAction {
         if (psiPageDeclaration.getAnnotations().length > 1)
             xmlPageName = ((JvmAnnotationConstantValue) psiPageDeclaration.getAnnotations()[1].getAttributes().get(0).getAttributeValue()).getConstantValue().toString();
 
-
         if(StringUtils.isBlank(xmlPageName)) return;
+
+        xmlPageName = xmlPageName.startsWith("page")?xmlPageName.replace("_", "."):xmlPageName;
+
 
         List<String> pageFieldList = new ArrayList<>();
 
@@ -111,6 +113,8 @@ public class SonoFlkAction extends AnAction {
             String xmlFieldName = "";
             if (psiField.getAnnotations().length > 0 && psiField.getAnnotations()[0].getAttributes().size()>0)
                 xmlFieldName = ((JvmAnnotationConstantValue) psiField.getAnnotations()[0].getAttributes().get(0).getAttributeValue()).getConstantValue().toString();
+
+            xmlFieldName = xmlFieldName.startsWith("field")?xmlFieldName.replace("_", "."):xmlFieldName;
 
             if(StringUtils.isBlank(xmlFieldName)) continue;
 
