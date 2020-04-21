@@ -107,6 +107,7 @@ public class SonoFlkAction extends AnAction {
             String xmlFieldName = getXmlFieldName(psiField);
 
             if(xmlFieldName.equals("row")) {
+                xmlFieldName = xmlPageName + "row";
                 PsiClass psiRowDeclaration = getPsiDeclarationFromGenericList(psiField.getType());
 
                 List<DataHandler.FieldInfo> pageRowInfoList = new ArrayList<>();
@@ -125,7 +126,7 @@ public class SonoFlkAction extends AnAction {
                         pageRowInfoList.add(rowInfo);
                     }
                 }
-                DataHandler.rows.put(xmlPageName + "row", pageRowInfoList);
+                DataHandler.rows.put(xmlFieldName, pageRowInfoList);
 
             }
 

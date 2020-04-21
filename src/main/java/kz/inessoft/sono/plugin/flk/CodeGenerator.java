@@ -192,7 +192,7 @@ public class CodeGenerator {
         DataHandler.FieldInfo mainFieldInfo = DataHandler.fields.get(xmlField);
 
         StringBuilder sb = new StringBuilder();
-        sb.append("\n//").append(mainFieldInfo.xmlPageName).append(".").append(mainFieldInfo.xmlFieldName).append("\n");
+        sb.append("\n//").append(mainFieldInfo.xmlPageName.replace(".", "_")).append(".").append(mainFieldInfo.xmlFieldName.replace(".", "_")).append("\n");
         sb.append("private void ").append(methodName(mainFieldInfo.fieldProperty, "doFlk"));
 
         sb.append(parameterListStr(dependOnXmlFieldList, pageFieldList, false)).append("{\n");
