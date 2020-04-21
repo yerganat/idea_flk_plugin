@@ -4,8 +4,18 @@
     <vendor email="yerganat.merzentay@inessoft.kz" url="http://inessoft.kz">TOO Inessoft</vendor>
 
     <description><![CDATA[
-    Описание будет здесь<br>
-    <em>как пользоватлься плагином</em>
+    Утилита доступна на:<br>
+    <b>Tools -> Sono Flk Utlilty</b> или по клавишам <b>"shift + G"</b> <br>
+    <br>
+    Выбирает все параметры которые доступные на месте курсора со следующими аннотациями<br>
+    <em>@XmlType</em>(на классе Page должен быть второй аннатацией)<br>
+    <em>@XmlElement</em>(на парметре должен быть первой аннотацией)<br>
+    <br>
+    <b>Функциональности</b>:<br>
+    -обязательность<br>
+    -условно обязательность<br>
+    -заполнненость приложении формы<br>
+    -проверка выражения<br>
     ]]></description>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html

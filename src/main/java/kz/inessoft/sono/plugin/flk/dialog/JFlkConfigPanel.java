@@ -110,7 +110,7 @@ public class JFlkConfigPanel extends JPanel {
 			fieldPanel.setLayout(new BoxLayout(fieldPanel, BoxLayout.X_AXIS));
 
 			//---- mainFieldLabel ----
-			mainFieldLabel.setText("ФЛК для поле");
+			mainFieldLabel.setText("ФЛК для ");
 			fieldPanel.add(mainFieldLabel);
 
             mainFieldComboBox.setEditable(true);
@@ -174,7 +174,7 @@ public class JFlkConfigPanel extends JPanel {
 				pagablePanel.add(dependOnLabel);
 
 			//---- pageViewCheckBox ----
-				pageViewCheckBox.setText("*показать постранично(проверка заполненности приложении)");
+				pageViewCheckBox.setText("*показать постранично(проверка заполненности приложении формы)");
 				pageViewCheckBox.setVerticalAlignment(SwingConstants.TOP);
 				pageViewCheckBox.addChangeListener(new ChangeListener() {
                     @Override
