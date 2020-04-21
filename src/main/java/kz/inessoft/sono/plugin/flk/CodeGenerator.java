@@ -97,17 +97,28 @@ public class CodeGenerator {
         for (int i = 0; i < xmlFieldInfoList.size(); i++) {
             DataHandler.FieldInfo fieldInfo = DataHandler.fields.get(xmlFieldInfoList.get(i));
 
-            String checkStrForOne = filledStr(fieldInfo, filled);
+
             if(fieldInfo.isVariablePageList) {
-                if(!pageListVariableMap.containsKey(fieldInfo.pageVariable )) {
-                    List<String> stringList = new ArrayList<>();
-                    stringList.add(checkStrForOne);
-                    pageListVariableMap.put(fieldInfo.pageVariable , new ArrayList<>(stringList));
+                StringBuilder checkStrForOneSb = new StringBuilder();
+                if(fieldInfo.xmlFieldName.equals("row")) {
+                    List<String> rowCheckList = new ArrayList<>();
+                    for (DataHandler.FieldInfo rowInfo : DataHandler.rows.get(fieldInfo.xmlPageName + "row")) {
+                        rowCheckList.add(filledStr(rowInfo, filled));
+                    }
+                    checkStrForOneSb.append("(").append("p.getRow() != null && ").append("p.getRow().stream().anyMatch(p -> ").append(String.join(" || ", rowCheckList)).append("))");
                 } else {
-                    pageListVariableMap.get(fieldInfo.pageVariable).add(checkStrForOne);
+                    checkStrForOneSb.append(filledStr(fieldInfo, filled));
+                }
+
+                if (!pageListVariableMap.containsKey(fieldInfo.pageVariable)) {
+                    List<String> stringList = new ArrayList<>();
+                    stringList.add(checkStrForOneSb.toString());
+                    pageListVariableMap.put(fieldInfo.pageVariable, new ArrayList<>(stringList));
+                } else {
+                    pageListVariableMap.get(fieldInfo.pageVariable).add(checkStrForOneSb.toString());
                 }
             } else {
-                checkStringSb.append(checkStrForOne);
+                checkStringSb.append(filledStr(fieldInfo, filled));
 
                 if (i != xmlFieldInfoList.size() - 1)  {
                     checkStringSb.append(" \n|| ");
@@ -121,7 +132,7 @@ public class CodeGenerator {
             }
             int i =0;
             for (String listPageVar : pageListVariableMap.keySet()) {
-                checkStringSb.append("(" + listPageVar+ "!= null && " + listPageVar + ".stream().anyMatch(p -> " + String.join(" || ", pageListVariableMap.get(listPageVar)) + "))");
+                checkStringSb.append("(").append(listPageVar).append("!= null && ").append(listPageVar).append(".stream().anyMatch(p -> ").append(String.join(" || ", pageListVariableMap.get(listPageVar))).append("))");
 
                 i++;
                 if (i != pageListVariableMap.size())  {
@@ -138,24 +149,24 @@ public class CodeGenerator {
 
     private static String filledStr(DataHandler.FieldInfo fieldInfo, boolean filled) {
         String pageVariableTmp = fieldInfo.isVariablePageList ? "p" : fieldInfo.pageVariable;
-        String filledStr = "";
+        StringBuilder filledStr = new StringBuilder();
         switch (fieldInfo.fieldType) {
             case "java.lang.String":
-                filledStr = "StringUtils." + (filled ? "isNotBlank" : "isBlank")
-                        + "(" + pageVariableTmp + "." + methodName(fieldInfo.fieldProperty, "get") + "())";
+                filledStr.append("StringUtils.").append(filled ? "isNotBlank" : "isBlank").append("(")
+                        .append(pageVariableTmp).append(".").append(methodName(fieldInfo.fieldProperty, "get")).append("())");
                 break;
             case "java.lang.Boolean":
             case "boolean":
-                filledStr = "BooleanUtils." + (filled ? "isTrue" : "isNotTrue")
-                        + "(" + pageVariableTmp + "." + methodName(fieldInfo.fieldProperty, "is") + "())";
+                filledStr.append("BooleanUtils.").append(filled ? "isTrue" : "isNotTrue").append("(")
+                        .append(pageVariableTmp).append(".").append(methodName(fieldInfo.fieldProperty, "is")).append("())");
                 break;
             default:
-                filledStr = pageVariableTmp + "."
-                        + methodName(fieldInfo.fieldProperty, "get") + "()" + (filled ? "!=" : "==") + " null";
+                filledStr.append(pageVariableTmp).append(".").append(methodName(fieldInfo.fieldProperty, "get"))
+                        .append("()").append(filled ? "!=" : "==").append(" null");
                 break;
         }
 
-        return filledStr;
+        return filledStr.toString();
     }
 
     private static String variableExprStr(DataHandler.FieldInfo fieldInfo, boolean isDoubleExpr) {

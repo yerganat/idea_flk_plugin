@@ -81,13 +81,7 @@ public class SonoFlkAction extends AnAction {
     private static void fillVariables(PsiType psiType, boolean isLocalVariable, String variableName, String localVariableType) {
         boolean isFieldList = false;
 
-        PsiClass psiPageDeclaration = null;
-        if (psiType instanceof PsiClassType && psiType.getCanonicalText().contains("java.util.List")) {
-            PsiClassType.ClassResolveResult psiGeneric =  ((PsiClassType) psiType).resolveGenerics();
-            if(psiGeneric.getSubstitutor().getSubstitutionMap().size() > 0) {
-                psiPageDeclaration = PsiTypesUtil.getPsiClass(psiGeneric.getSubstitutor().getSubstitutionMap().entrySet().iterator().next().getValue().getDeepComponentType());
-            }
-        }
+        PsiClass psiPageDeclaration = getPsiDeclarationFromGenericList(psiType);
 
         if(psiPageDeclaration != null) {
             isFieldList = true;
@@ -110,15 +104,29 @@ public class SonoFlkAction extends AnAction {
         List<String> pageFieldList = new ArrayList<>();
 
         for (PsiField psiField : psiPageDeclaration.getFields()) {
-            String xmlFieldName = "";
-            if (psiField.getAnnotations().length > 0 && psiField.getAnnotations()[0].getAttributes().size()>0) {
-                String annotateName = psiField.getAnnotations()[0].getAttributes().get(0).getAttributeName();
-                if(annotateName.equals("name"))
-                    xmlFieldName = ((JvmAnnotationConstantValue) psiField.getAnnotations()[0].getAttributes().get(0).getAttributeValue()).getConstantValue().toString();
-            }
+            String xmlFieldName = getXmlFieldName(psiField);
 
-            xmlFieldName = StringUtils.isBlank(xmlFieldName) ? psiField.getName():xmlFieldName; //Если нат аннотациии
-            xmlFieldName = xmlFieldName.startsWith("field")?xmlFieldName.replace("_", "."):xmlFieldName;
+            if(xmlFieldName.equals("row")) {
+                PsiClass psiRowDeclaration = getPsiDeclarationFromGenericList(psiField.getType());
+
+                List<DataHandler.FieldInfo> pageRowInfoList = new ArrayList<>();
+
+                if(psiRowDeclaration != null) {
+                    for (PsiField psiPageRowField : psiRowDeclaration.getFields()) {
+                        String xmlRowFieldName = getXmlFieldName(psiPageRowField);
+
+                        DataHandler.FieldInfo rowInfo = new DataHandler.FieldInfo();
+                        rowInfo.xmlFieldName = xmlRowFieldName;
+                        rowInfo.xmlPageName = xmlPageName;
+                        rowInfo.fieldProperty = psiPageRowField.getName();
+                        rowInfo.fieldType = psiPageRowField.getType().getCanonicalText();
+
+                        pageRowInfoList.add(rowInfo);
+                    }
+                }
+                DataHandler.rows.put(xmlPageName + "row", pageRowInfoList);
+
+            }
 
             DataHandler.FieldInfo fieldInfo = new DataHandler.FieldInfo();
             fieldInfo.isVariablePageList = isFieldList;
@@ -140,4 +148,30 @@ public class SonoFlkAction extends AnAction {
             DataHandler.pages.put(xmlPageName, pageFieldList);
     }
 
+
+    private static String getXmlFieldName(PsiField psiField) {
+        String xmlFieldName = "";
+        if (psiField.getAnnotations().length > 0 && psiField.getAnnotations()[0].getAttributes().size()>0) {
+            String annotateName = psiField.getAnnotations()[0].getAttributes().get(0).getAttributeName();
+            if(annotateName.equals("name"))
+                xmlFieldName = ((JvmAnnotationConstantValue) psiField.getAnnotations()[0].getAttributes().get(0).getAttributeValue()).getConstantValue().toString();
+        }
+
+        xmlFieldName = StringUtils.isBlank(xmlFieldName) ? psiField.getName():xmlFieldName; //Если нат аннотациии
+        xmlFieldName = xmlFieldName.startsWith("field")?xmlFieldName.replace("_", "."):xmlFieldName;
+
+        return xmlFieldName;
+    }
+
+
+    private static PsiClass getPsiDeclarationFromGenericList(PsiType psiType) {
+        if (psiType instanceof PsiClassType && psiType.getCanonicalText().contains("java.util.List")) {
+            PsiClassType.ClassResolveResult psiGeneric =  ((PsiClassType) psiType).resolveGenerics();
+            if(psiGeneric.getSubstitutor().getSubstitutionMap().size() > 0) {
+                return PsiTypesUtil.getPsiClass(psiGeneric.getSubstitutor().getSubstitutionMap().entrySet().iterator().next().getValue().getDeepComponentType());
+            }
+        }
+
+        return null;
+    }
 }

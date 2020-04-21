@@ -8,6 +8,7 @@ public class DataHandler {
 
     public static Map<String, FieldInfo> fields = new TreeMap<>();
     public static Map<String, List<String>> pages = new TreeMap<>();
+    public static Map<String, List<FieldInfo>> rows = new TreeMap<>();
 
     public static void reset() {
         fields = new TreeMap<>();
