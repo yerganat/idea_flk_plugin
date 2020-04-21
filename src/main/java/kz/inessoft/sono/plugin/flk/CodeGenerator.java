@@ -195,7 +195,7 @@ public class CodeGenerator {
             pageCheckVarList.add(pageVar);
             pageCheckerSb.append("boolean ").append(pageVar).append(" =");
 
-            List<String> pageFields = DataHandler.pages.get(page);
+            List<String> pageFields = pageFilledFieldsMap.get(page);
 
             pageCheckerSb.append(checkFilledStrList(pageFields, true, true));
 //            for (int i = 0; i < pageFields.size(); i++) {
