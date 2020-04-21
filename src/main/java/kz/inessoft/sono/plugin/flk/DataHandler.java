@@ -1,17 +1,17 @@
 package kz.inessoft.sono.plugin.flk;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class DataHandler {
 
-    public static Map<String, FieldInfo> fields = new HashMap<>();
-    public static Map<String, List<String>> pages = new HashMap<>();
+    public static Map<String, FieldInfo> fields = new TreeMap<>();
+    public static Map<String, List<String>> pages = new TreeMap<>();
 
     public static void reset() {
-        fields = new HashMap<>();
-        pages = new HashMap<>();
+        fields = new TreeMap<>();
+        pages = new TreeMap<>();
     }
 
     public static class FieldInfo {
