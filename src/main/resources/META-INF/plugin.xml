@@ -1,15 +1,15 @@
 <idea-plugin>
     <id>sono_flk_plugin</id>
-    <name>Flk generator utility for SONO</name>
+    <name>Sono Flk Utility</name>
     <vendor email="yerganat.merzentay@inessoft.kz" url="http://inessoft.kz">TOO Inessoft</vendor>
 
     <description><![CDATA[
     Утилита доступна на:<br>
-    <b>Tools -> Sono Flk Utlilty</b> или по клавишам <b>"shift + G"</b> <br>
+    <b>Tools -> Sono Flk Utlilty</b> или по клавишам <b>"alt + S"</b> <br>
     <br>
     Выбирает все параметры которые доступные на месте курсора со следующими аннотациями<br>
-    <em>@XmlType</em>(на классе Page должен быть второй аннатацией)<br>
-    <em>@XmlElement</em>(на парметре должен быть первой аннотацией)<br>
+    <em>@XmlType</em>(в классе Page должен быть второй аннатацией)<br>
+    <em>@XmlElement</em>(в параметре должен быть первой аннотацией)<br>
     <br>
     <b>Функциональности</b>:<br>
     -обязательность<br>
@@ -34,7 +34,7 @@
         <!-- Add your actions here -->
         <action id="kz.inessoft.sono.plugin.flk.SonoFlkAction" class="kz.inessoft.sono.plugin.flk.SonoFlkAction"
                 text="Sono Flk Utility" description="Sono Flk Utility">
-            <keyboard-shortcut first-keystroke="shift G" keymap="$default"/>
+            <keyboard-shortcut first-keystroke="alt S" keymap="$default"/>
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>
     </actions>

@@ -118,7 +118,7 @@ public class CodeGenerator {
     }
     private static String doFlkMethodCall(String flkCheckXmlField, List<String> dependOnXmlFieldList, List<String> pageFieldList) {
         DataHandler.FieldInfo fieldInfo = DataHandler.fields.get(flkCheckXmlField);
-        return methodName(fieldInfo.fieldProperty, "doFlk") + parameterListStr(dependOnXmlFieldList, pageFieldList, true) + ";";
+        return methodName(fieldInfo.fieldProperty, "\ndoFlk") + parameterListStr(dependOnXmlFieldList, pageFieldList, true) + ";";
     }
 
     private static String doFlkMethodDeclaration(String xmlField,
