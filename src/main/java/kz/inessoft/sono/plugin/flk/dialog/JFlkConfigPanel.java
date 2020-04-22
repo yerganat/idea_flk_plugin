@@ -16,10 +16,8 @@ import org.apache.commons.lang.StringUtils;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 /*
  * Created by JFormDesigner on Sat Apr 18 15:57:46 ALMT 2020
@@ -302,6 +300,9 @@ public class JFlkConfigPanel extends JPanel {
 				exprAddButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent actionEvent) {
+					if(formHandler.calcXmlFieldMap.containsKey((String)fieldComboBox.getSelectedItem())
+							&& formHandler.calcXmlFieldMap.containsValue((String)operComboBox.getSelectedItem())) return;
+
 					formHandler.calcXmlFieldMap.put((String)fieldComboBox.getSelectedItem(), (String)operComboBox.getSelectedItem());
 
 					JPanel jPanelTmp = new JPanel();
@@ -356,6 +357,7 @@ public class JFlkConfigPanel extends JPanel {
 	}
 
 	private void addDependedField(String fieldName, Set<String> containerList, boolean exclude) {
+		if(containerList.contains(fieldName)) return;
 		containerList.add(fieldName);
 
 		JPanel jPanelTmp = new JPanel();

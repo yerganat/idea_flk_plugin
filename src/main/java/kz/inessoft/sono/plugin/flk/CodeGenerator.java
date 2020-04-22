@@ -100,12 +100,13 @@ public class CodeGenerator {
 
             if(fieldInfo.isVariablePageList) {
                 StringBuilder checkStrForOneSb = new StringBuilder();
-                if(fieldInfo.xmlFieldName.equals("row")) {
+                if(fieldInfo.xmlFieldName.equals(fieldInfo.xmlPageName + ".row")) {
                     List<String> rowCheckList = new ArrayList<>();
-                    for (DataHandler.FieldInfo rowInfo : DataHandler.rows.get(fieldInfo.xmlPageName + "row")) {
+                    for (DataHandler.FieldInfo rowInfo : DataHandler.rows.get(fieldInfo.xmlPageName + ".row")) {
+                        if(rowInfo.xmlFieldName.endsWith(".A")) continue;
                         rowCheckList.add(filledStr(rowInfo, filled));
                     }
-                    checkStrForOneSb.append("(").append("p.getRow() != null && ").append("p.getRow().stream().anyMatch(r -> ").append(String.join(" || ", rowCheckList)).append("))");
+                    checkStrForOneSb.append("\n(").append("p.getRow() != null && ").append("p.getRow().stream().anyMatch(r -> ").append(String.join(" || ", rowCheckList)).append("))");
                 } else {
                     checkStrForOneSb.append(filledStr(fieldInfo, filled));
                 }
