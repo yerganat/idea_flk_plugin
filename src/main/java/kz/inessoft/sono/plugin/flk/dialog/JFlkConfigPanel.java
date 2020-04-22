@@ -213,6 +213,7 @@ public class JFlkConfigPanel extends JPanel {
                                 && pageViewCheckBox.isSelected()
                                 && DataHandler.pages.containsKey(dependValue)) {
                             exeptFieldComboBox.resetData(DataHandler.pages.get(dependValue).toArray());
+							exeptFieldComboBox.setEditable(false);
                         }
                     }
                 });

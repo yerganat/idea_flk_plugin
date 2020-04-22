@@ -4,6 +4,7 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import kz.inessoft.sono.plugin.flk.utils.PsiDocumentUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 
 import java.util.*;
@@ -162,8 +163,17 @@ public class CodeGenerator {
                         .append(pageVariableTmp).append(".").append(methodName(fieldInfo.fieldProperty, "is")).append("())");
                 break;
             default:
-                filledStr.append(pageVariableTmp).append(".").append(methodName(fieldInfo.fieldProperty, "get"))
-                        .append("()").append(filled ? "!=" : "==").append(" null");
+                if(StringUtils.isBlank(pageVariableTmp)) {
+                    filledStr.append(fieldInfo.fieldProperty);
+                    filledStr.append(filled ? "!=" : "==");
+                    if(fieldInfo.fieldType.equals("long") || fieldInfo.fieldType.equals("int"))
+                        filledStr.append(" 0");
+                    else
+                        filledStr.append(" null");
+                } else {
+                    filledStr.append(pageVariableTmp).append(".").append(methodName(fieldInfo.fieldProperty, "get"))
+                            .append("()").append(filled ? "!=" : "==").append(" null");
+                }
                 break;
         }
 
@@ -172,7 +182,7 @@ public class CodeGenerator {
 
     private static String variableExprStr(String calcExpr, DataHandler.FieldInfo fieldInfo, boolean isDoubleExpr) {
         String pageVariableTmp = fieldInfo.isVariablePageList ? "p" : fieldInfo.pageVariable;
-        String exprStr = calcExpr + " " +  (isDoubleExpr?"dv":"lv") + "(" + pageVariableTmp + "." + methodName(fieldInfo.fieldProperty, "get") + "())";
+        String exprStr = calcExpr + " " +  (isDoubleExpr?"dv":"lv") + "(" + (StringUtils.isBlank(pageVariableTmp)? (fieldInfo.fieldProperty + ")") :  pageVariableTmp + "." +methodName(fieldInfo.fieldProperty, "get") + "())");
 
         if (fieldInfo.isVariablePageList) {
             exprStr = "\n" + calcExpr + " " + "(" + fieldInfo.pageVariable + "!= null ?" + fieldInfo.pageVariable + ".stream().filter(Objects::nonNull)."+(isDoubleExpr?"mapToDouble":"mapToLong")+"(p -> " + exprStr + ").sum():0L)";
@@ -323,9 +333,9 @@ public class CodeGenerator {
         for (int i = 0; i < infos.length; i++) {
             DataHandler.FieldInfo dfi = infos[i];
             if (!withoutType)
-                prameterSb.append(dfi.localPageVariableType);
+                prameterSb.append(StringUtils.isBlank(dfi.localPageVariableType)?dfi.fieldType:dfi.localPageVariableType);
 
-            prameterSb.append(" ").append(dfi.pageVariable);
+            prameterSb.append(" ").append(StringUtils.isBlank(dfi.pageVariable)?dfi.fieldProperty:dfi.pageVariable);
 
             if (i != infos.length - 1)
                 prameterSb.append(" ,");

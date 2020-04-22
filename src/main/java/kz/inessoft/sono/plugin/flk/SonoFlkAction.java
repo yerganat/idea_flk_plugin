@@ -88,14 +88,26 @@ public class SonoFlkAction extends AnAction {
             psiPageDeclaration = PsiTypesUtil.getPsiClass(psiType);
         }
 
-        if(psiPageDeclaration == null)
-            return;
-
         String xmlPageName = "";
-        if (psiPageDeclaration.getAnnotations().length > 1)
+        if (psiPageDeclaration != null && psiPageDeclaration.getAnnotations().length > 1)
             xmlPageName = ((JvmAnnotationConstantValue) psiPageDeclaration.getAnnotations()[1].getAttributes().get(0).getAttributeValue()).getConstantValue().toString();
 
-        if(StringUtils.isBlank(xmlPageName)) return;
+        if(StringUtils.isBlank(xmlPageName)) {
+
+            //локлаьный параметр, без класса
+            DataHandler.FieldInfo localFieldInfo = new DataHandler.FieldInfo();
+            localFieldInfo.isLocalPageVariable = isLocalVariable;
+            localFieldInfo.xmlFieldName = variableName;
+            localFieldInfo.fieldProperty = variableName;
+            localFieldInfo.fieldType = localVariableType;
+
+            if(!DataHandler.fields.containsKey(variableName) || isLocalVariable)
+                DataHandler.fields.put(variableName, localFieldInfo);
+            return;
+        }
+
+        if(psiPageDeclaration == null)
+            return;
 
         xmlPageName = xmlPageName.startsWith("page")?xmlPageName.replace("_", "."):xmlPageName;
 
