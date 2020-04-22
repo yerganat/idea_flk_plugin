@@ -180,7 +180,6 @@ public class JFlkConfigPanel extends JPanel {
                         if(pageViewCheckBox.isSelected()) {
                             dependFieldComboBox.resetData(DataHandler.pages.keySet().toArray());
                             dependFieldComboBox.setEditable(false);
-							exeptFieldComboBox.setEditable(false);
 
 							if(StringUtils.isNotBlank((String) dependFieldComboBox.getSelectedItem()))
 								exeptFieldComboBox.resetData(DataHandler.pages.get((String) dependFieldComboBox.getSelectedItem()).toArray());
@@ -190,6 +189,8 @@ public class JFlkConfigPanel extends JPanel {
 
                             exeptFieldComboBox.resetData(new String[]{});
                         }
+
+						exeptFieldComboBox.setEditable(false);
                     }
                 });
 
@@ -212,7 +213,6 @@ public class JFlkConfigPanel extends JPanel {
                                 && pageViewCheckBox.isSelected()
                                 && DataHandler.pages.containsKey(dependValue)) {
                             exeptFieldComboBox.resetData(DataHandler.pages.get(dependValue).toArray());
-                            exeptFieldComboBox.setEditable(false);
                         }
                     }
                 });
@@ -234,6 +234,8 @@ public class JFlkConfigPanel extends JPanel {
 				//---- exeptDieldLabel ----
 				exeptFieldLabel.setText("исключить поле");
 				addDependPanel.add(exeptFieldLabel);
+
+				exeptFieldComboBox.setEditable(false);
 				addDependPanel.add(exeptFieldComboBox);
 
 				//---- exeptFieldButton ----

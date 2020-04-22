@@ -170,12 +170,12 @@ public class CodeGenerator {
         return filledStr.toString();
     }
 
-    private static String variableExprStr(DataHandler.FieldInfo fieldInfo, boolean isDoubleExpr) {
+    private static String variableExprStr(String calcExpr, DataHandler.FieldInfo fieldInfo, boolean isDoubleExpr) {
         String pageVariableTmp = fieldInfo.isVariablePageList ? "p" : fieldInfo.pageVariable;
-        String exprStr = (isDoubleExpr?"dv":"lv") + "(" + pageVariableTmp + "." + methodName(fieldInfo.fieldProperty, "get") + "())";
+        String exprStr = calcExpr + " " +  (isDoubleExpr?"dv":"lv") + "(" + pageVariableTmp + "." + methodName(fieldInfo.fieldProperty, "get") + "())";
 
         if (fieldInfo.isVariablePageList) {
-            exprStr = "(" + fieldInfo.pageVariable + "!= null ?" + fieldInfo.pageVariable + ".stream().filter(Objects::nonNull)."+(isDoubleExpr?"mapToDouble":"mapToLong")+"(p -> " + exprStr + ").sum():0L)";
+            exprStr = "\n" + calcExpr + " " + "(" + fieldInfo.pageVariable + "!= null ?" + fieldInfo.pageVariable + ".stream().filter(Objects::nonNull)."+(isDoubleExpr?"mapToDouble":"mapToLong")+"(p -> " + exprStr + ").sum():0L)";
         }
 
         return exprStr;
@@ -244,7 +244,11 @@ public class CodeGenerator {
 //        }
 
         if (conditionSb.length() > 0) {
-            sb.append(" \n&& (").append(conditionSb).append(")");
+            if(dependOnXmlFieldList.size() == 1) {
+                sb.append(" && ").append(conditionSb);
+            } else {
+                sb.append(" \n&& (").append(conditionSb).append(")");
+            }
         }
         sb.append(")");
         sb.append(addError(mainFieldInfo.xmlPageName, mainFieldInfo.xmlFieldName, "msgEmpty"));
@@ -261,14 +265,13 @@ public class CodeGenerator {
 
         StringBuilder exprSb = new StringBuilder();
 
+        int exp_i = 0;
         for (Map.Entry<String, String> calc : calcXmlFieldMap.entrySet()) {
-            exprSb.append(calc.getValue())
-                    .append(" ")
-                    .append(variableExprStr(DataHandler.fields.get(calc.getKey()), isDoubleExpr));
+            exprSb.append(variableExprStr(++exp_i==1?"":calc.getValue(), DataHandler.fields.get(calc.getKey()), isDoubleExpr));
         }
 
         if (exprSb.length() > 0) {
-            String mainExprFieldMethod =variableExprStr(mainFieldInfo, isDoubleExpr);
+            String mainExprFieldMethod =variableExprStr("", mainFieldInfo, isDoubleExpr);
 
             if(isDoubleExpr) {
                 sb.append("if(")
