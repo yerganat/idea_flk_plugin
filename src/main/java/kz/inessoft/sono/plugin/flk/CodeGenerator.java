@@ -80,7 +80,7 @@ public class CodeGenerator {
     private static String addError(String xmlPageName, String xmlFieldName, String msg) {
         return "\naddError(FORM_NAME, " + (DataHandler.formIdx?"i":"null") + ", \""
                 + xmlPageName.replace(".", "_").replace("_row", "")
-                + "\", " +(xmlPageName.endsWith(".row")?"i":"null") + ", \"" + xmlFieldName.replace(".", "_") + "\", \"" + msg + "\");";
+                + "\", " +(DataHandler.pageIdx?"i":"null") + ", \"" + xmlFieldName.replace(".", "_") + "\", \"" + msg + "\");";
     }
 
     private static String checkFilledStr(DataHandler.FieldInfo fieldInfo, boolean filled) {
@@ -331,12 +331,11 @@ public class CodeGenerator {
 
         DataHandler.FieldInfo[] infos = fieldInfoMap.values().toArray(new DataHandler.FieldInfo[0]);
 
-        boolean pageIdx = false;
         StringBuilder prameterSb = new StringBuilder();
         prameterSb.append("(");
         for (int i = 0; i < infos.length; i++) {
             DataHandler.FieldInfo dfi = infos[i];
-            pageIdx = dfi.xmlPageName.endsWith(".row");
+            DataHandler.pageIdx = DataHandler.pageIdx || dfi.xmlPageName.endsWith(".row");
 
             if (!withoutType)
                 prameterSb.append(StringUtils.isBlank(dfi.localPageVariableType)?dfi.fieldType:dfi.localPageVariableType);
@@ -347,7 +346,7 @@ public class CodeGenerator {
                 prameterSb.append(" ,");
         }
 
-        if(infos.length> 0 && (DataHandler.formIdx || pageIdx)) {
+        if(infos.length> 0 && (DataHandler.formIdx || DataHandler.pageIdx)) {
             prameterSb.append(",").append(!withoutType?" int i":" i");
         }
         prameterSb.append(")");
