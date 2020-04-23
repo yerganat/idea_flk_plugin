@@ -9,5 +9,5 @@ public class FormHandler {
     public Set<String> excludeXmlFieldList = new HashSet<>();
 
     public boolean isHasCalculation = false;
-    public Map<String, String> calcXmlFieldMap = new HashMap<>();
+    public Map<String, String> calcXmlFieldMap = new LinkedHashMap<>();
 }

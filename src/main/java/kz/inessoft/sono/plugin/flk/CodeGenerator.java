@@ -46,7 +46,7 @@ public class CodeGenerator {
         }
 
 
-        Map<String, String> calcXmlFieldMap = new HashMap<>();
+        Map<String, String> calcXmlFieldMap = new LinkedHashMap<>();
 
         if (formHandler.isHasCalculation) {
             calcXmlFieldMap.putAll(formHandler.calcXmlFieldMap);
@@ -182,9 +182,13 @@ public class CodeGenerator {
         return filledStr.toString();
     }
 
-    private static String variableExprStr(String calcExpr, DataHandler.FieldInfo fieldInfo, boolean isDoubleExpr) {
+    private static String variableExprStr(String calcExpr, DataHandler.FieldInfo fieldInfo, boolean isDoubleExpr, boolean isMainExpr) {
         String pageVariableTmp = fieldInfo.isVariablePageList ? "p" : fieldInfo.pageVariable;
         String exprStr = calcExpr + " " +  (isDoubleExpr?"dv":"lv") + "(" + (StringUtils.isBlank(pageVariableTmp)? (fieldInfo.fieldProperty + ")") :  pageVariableTmp + "." +methodName(fieldInfo.fieldProperty, "get") + "())");
+
+        if(!isMainExpr && !fieldInfo.isLocalPageVariable) {
+            exprStr = "(" + fieldInfo.pageVariable + "!=null?"+ exprStr +":0)";
+        }
 
         if (fieldInfo.isVariablePageList) {
             exprStr = "\n" + calcExpr + " " + "(" + fieldInfo.pageVariable + "!= null ?" + fieldInfo.pageVariable + ".stream().filter(Objects::nonNull)."+(isDoubleExpr?"mapToDouble":"mapToLong")+"(p -> " + exprStr + ").sum():0L)";
@@ -279,11 +283,11 @@ public class CodeGenerator {
 
         int exp_i = 0;
         for (Map.Entry<String, String> calc : calcXmlFieldMap.entrySet()) {
-            exprSb.append(variableExprStr(++exp_i==1?"":calc.getValue(), DataHandler.fields.get(calc.getKey()), isDoubleExpr));
+            exprSb.append(variableExprStr(++exp_i==1?"":calc.getValue(), DataHandler.fields.get(calc.getKey()), isDoubleExpr, false));
         }
 
         if (exprSb.length() > 0) {
-            String mainExprFieldMethod =variableExprStr("", mainFieldInfo, isDoubleExpr);
+            String mainExprFieldMethod =variableExprStr("", mainFieldInfo, isDoubleExpr, true);
 
             if(isDoubleExpr) {
                 sb.append("if(")
@@ -293,11 +297,11 @@ public class CodeGenerator {
                         .append("double v = ")
                         .append(exprSb)
                         .append(";\n")
-                        .append("if (v < (")
+                        .append("if (v < ")
                         .append(mainExprFieldMethod)
-                        .append(" - 0.5) || (v >= (")
+                        .append(" - 0.5 || v >= ")
                         .append(mainExprFieldMethod)
-                        .append(") + 0.5)))\n")
+                        .append(" + 0.5)")
                         .append(addError(mainFieldInfo.xmlPageName, mainFieldInfo.xmlFieldName, "msgCalcError"))
                         .append("\n}");
             } else {
