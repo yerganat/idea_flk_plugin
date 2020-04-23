@@ -238,7 +238,7 @@ public class JFlkConfigPanel extends JPanel {
 
 						exprComboBox.resetData( formHandler.dependOnXmlFieldList.stream().filter(p-> !p.startsWith("page")).toArray());
 
-                        addExprPanel("+", (String) dependFieldComboBox.getSelectedItem());
+                        addExprPanel((String)operComboBox.getSelectedItem(), (String) dependFieldComboBox.getSelectedItem());
                         setPanelEnabled(addedExprPanel, formHandler.isHasCalculation);
                         setPanelEnabled(exprInnerPanel, formHandler.isHasCalculation);
 					}

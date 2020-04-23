@@ -50,11 +50,16 @@ public class CodeGenerator {
 
         if (formHandler.isHasCalculation) {
             calcXmlFieldMap.putAll(formHandler.calcXmlFieldMap);
+
+            List<String> removeCalcs = new ArrayList<>();
             for (String fld : calcXmlFieldMap.keySet()) {
                 if (!DataHandler.fields.containsKey(fld)) {
-                    calcXmlFieldMap.remove(fld);
+                    removeCalcs.add(fld);
                 }
             }
+
+            calcXmlFieldMap.keySet().removeAll(removeCalcs);
+
         }
 
         PsiMethod containingMethod = PsiTreeUtil.getParentOfType(psiElement, PsiMethod.class);
