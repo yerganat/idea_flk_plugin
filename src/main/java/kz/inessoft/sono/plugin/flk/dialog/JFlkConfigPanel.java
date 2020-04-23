@@ -141,7 +141,7 @@ public class JFlkConfigPanel extends JPanel {
 			requirementPanel.add(requiredRadioButton);
 
 			//---- conditionRequiredRadioButton ----
-			conditionRequiredRadioButton.setText("условно обязательный реквезит");
+			conditionRequiredRadioButton.setText("обязательно-зависимый реквизит");
 			conditionRequiredRadioButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent actionEvent) {
@@ -238,7 +238,7 @@ public class JFlkConfigPanel extends JPanel {
 
 						exprComboBox.resetData( formHandler.dependOnXmlFieldList.stream().filter(p-> !p.startsWith("page")).toArray());
 
-                        addExprPanel((String) dependFieldComboBox.getSelectedItem(), "+");
+                        addExprPanel("+", (String) dependFieldComboBox.getSelectedItem());
                         setPanelEnabled(addedExprPanel, formHandler.isHasCalculation);
                         setPanelEnabled(exprInnerPanel, formHandler.isHasCalculation);
 					}
@@ -318,7 +318,7 @@ public class JFlkConfigPanel extends JPanel {
 				exprAddButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent actionEvent) {
-					addExprPanel((String) exprComboBox.getSelectedItem(), (String)operComboBox.getSelectedItem());
+					addExprPanel((String)operComboBox.getSelectedItem(), (String) exprComboBox.getSelectedItem());
 				}
 			});
 				exprInnerPanel.add(exprAddButton);
@@ -382,7 +382,7 @@ public class JFlkConfigPanel extends JPanel {
 		if(formHandler.calcXmlFieldMap.containsKey(field)
 				&& formHandler.calcXmlFieldMap.containsValue(oper)) return;
 
-		formHandler.calcXmlFieldMap.put(oper, field);
+		formHandler.calcXmlFieldMap.put(field, oper);
 		JPanel jPanelTmp = new JPanel();
 		jPanelTmp.setLayout(new BoxLayout(jPanelTmp, BoxLayout.X_AXIS));
 		jPanelTmp.add(new JLabel(oper + " " + field));

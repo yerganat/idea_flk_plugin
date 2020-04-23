@@ -11,13 +11,13 @@ public class DataHandler {
     public static Map<String, List<FieldInfo>> rows = new TreeMap<>();
 
     public static boolean formIdx = false;
-    public static boolean pageIdx = false;
+    public static boolean rowIdx = false;
     public static void reset() {
         fields = new TreeMap<>();
         pages = new TreeMap<>();
         rows = new TreeMap<>();
         formIdx = false;
-        pageIdx = false;
+        rowIdx = false;
     }
 
     public static class FieldInfo {
