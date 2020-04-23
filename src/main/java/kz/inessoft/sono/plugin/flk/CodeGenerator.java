@@ -21,10 +21,10 @@ public class CodeGenerator {
         PsiClass containingClasee = PsiTreeUtil.getParentOfType(psiElement, PsiClass.class);
 
 
-        List<String> dependOnXmlFieldList = new ArrayList<>();
+        List<String> dependOnXmlFieldList = new LinkedList<>();
 
         Map<String, List<String>> pageFilledFieldsMap = new HashMap<>();
-        List<String> pageFieldList = new ArrayList<>();
+        List<String> pageFieldList = new LinkedList<>();
 
         if (!formHandler.isMainOnlyRequired) {
             dependOnXmlFieldList.addAll(formHandler.dependOnXmlFieldList);
@@ -173,8 +173,8 @@ public class CodeGenerator {
                 if(StringUtils.isBlank(pageVariableTmp)) {
                     filledStr.append(fieldInfo.fieldProperty);
                     filledStr.append(filled ? "!=" : "==");
-                    if(fieldInfo.fieldType.equals("long") || fieldInfo.fieldType.equals("int"))
-                        filledStr.append(" 0");
+                    if(fieldInfo.fieldType.equals("long"))
+                        filledStr.append(" 0L");
                     else
                         filledStr.append(" null");
                 } else {
@@ -189,7 +189,7 @@ public class CodeGenerator {
 
     private static String variableExprStr(String calcExpr, DataHandler.FieldInfo fieldInfo, boolean isDoubleExpr, DataHandler.FieldInfo mainFieldInfo) {
         String pageVariableTmp = fieldInfo.isVariablePageList ? "p" : fieldInfo.pageVariable;
-        String exprStr = (isDoubleExpr?"dv":"lv") + "(" + (StringUtils.isBlank(pageVariableTmp)? (fieldInfo.fieldProperty + ")") :  pageVariableTmp + "." +methodName(fieldInfo.fieldProperty, "get") + "())");
+        String exprStr = StringUtils.isBlank(pageVariableTmp)?fieldInfo.fieldProperty: (isDoubleExpr?"dv":"lv") + "(" + pageVariableTmp + "." +methodName(fieldInfo.fieldProperty, "get") + "())";
 //
 //        if(!fieldInfo.pageVariable.equals(mainFieldInfo.pageVariable) && !fieldInfo.isLocalPageVariable) { //TODO  эта проверка должен быть вместе с проверкой на пустоту
 //            exprStr = "(" + fieldInfo.pageVariable + "!=null?"+ exprStr +":0)";
@@ -329,7 +329,7 @@ public class CodeGenerator {
 
     private static String parameterListStr(List<String> dependOnXmlFieldList, List<String> pageFieldList, String flkCheckXmlField, boolean withoutType) {
 
-        List<String> tmpList = new ArrayList<>();
+        List<String> tmpList = new LinkedList<>();
         tmpList.addAll(dependOnXmlFieldList);
         tmpList.addAll(pageFieldList);
         tmpList.add(flkCheckXmlField);
@@ -345,7 +345,7 @@ public class CodeGenerator {
         prameterSb.append("(");
         for (int i = 0; i < infos.length; i++) {
             DataHandler.FieldInfo dfi = infos[i];
-            DataHandler.rowIdx = DataHandler.rowIdx || dfi.xmlPageName.endsWith(".row");
+            DataHandler.rowIdx = DataHandler.rowIdx || (dfi.xmlPageName != null && dfi.xmlPageName.endsWith(".row"));
 
             if (!withoutType)
                 prameterSb.append(StringUtils.isBlank(dfi.localPageVariableType)?dfi.fieldType:dfi.localPageVariableType);
