@@ -10,5 +10,4 @@ public class FormHandler {
 
     public boolean isHasCalculation = false;
     public Map<String, String> calcXmlFieldMap = new HashMap<>();
-
 }

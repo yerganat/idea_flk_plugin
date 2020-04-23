@@ -100,15 +100,15 @@ public class JSearchBox extends JComboBox {
             editor.addKeyListener(listener);
 
             // register an action listener to keep the text area always up-to-date
-            ActionListener actionListener = new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if (cb.getSelectedItem() != null &&
-                            !editor.getText().equals(cb.getSelectedItem().toString())) {
-                        editor.setText(cb.getSelectedItem().toString());
-                    }
-                }
-            };
-            cb.addActionListener(actionListener);
+//            ActionListener actionListener = new ActionListener() {
+//                public void actionPerformed(ActionEvent e) {
+//                    if (cb.getSelectedItem() != null &&
+//                            !editor.getText().equals(cb.getSelectedItem().toString())) {
+//                        editor.setText(cb.getSelectedItem().toString());
+//                    }
+//                }
+//            };
+//            cb.addActionListener(actionListener);
         }
     }
 //

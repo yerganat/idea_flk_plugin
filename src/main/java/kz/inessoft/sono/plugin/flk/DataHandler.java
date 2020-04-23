@@ -10,9 +10,12 @@ public class DataHandler {
     public static Map<String, List<String>> pages = new TreeMap<>();
     public static Map<String, List<FieldInfo>> rows = new TreeMap<>();
 
+    public static boolean formIdx = false;
     public static void reset() {
         fields = new TreeMap<>();
         pages = new TreeMap<>();
+        rows = new TreeMap<>();
+        formIdx = false;
     }
 
     public static class FieldInfo {
@@ -25,9 +28,5 @@ public class DataHandler {
         String localPageVariableType; //Page1000001
         boolean isVariablePageList; //page1000601List
         boolean isRowInfo; //page1000601List
-
-        public String getPageVariable() {
-            return pageVariable;
-        }
     }
 }

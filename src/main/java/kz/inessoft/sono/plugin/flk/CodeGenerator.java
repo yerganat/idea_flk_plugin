@@ -78,7 +78,9 @@ public class CodeGenerator {
     }
 
     private static String addError(String xmlPageName, String xmlFieldName, String msg) {
-        return "\naddError(FORM_NAME, null, \"" + xmlPageName.replace(".", "_") + "\", null, \"" + xmlFieldName.replace(".", "_") + "\", \"" + msg + "\");";
+        return "\naddError(FORM_NAME, " + (DataHandler.formIdx?"i":"null") + ", \""
+                + xmlPageName.replace(".", "_").replace("_row", "")
+                + "\", " +(xmlPageName.endsWith(".row")?"i":"null") + ", \"" + xmlFieldName.replace(".", "_") + "\", \"" + msg + "\");";
     }
 
     private static String checkFilledStr(DataHandler.FieldInfo fieldInfo, boolean filled) {
@@ -123,7 +125,7 @@ public class CodeGenerator {
                 checkStringSb.append(filledStr(fieldInfo, filled));
 
                 if (i != xmlFieldInfoList.size() - 1)  {
-                    checkStringSb.append(" \n|| ");
+                    checkStringSb.append(" || ");
                 }
             }
         }
@@ -192,7 +194,7 @@ public class CodeGenerator {
     }
     private static String doFlkMethodCall(String flkCheckXmlField, List<String> dependOnXmlFieldList, List<String> pageFieldList) {
         DataHandler.FieldInfo fieldInfo = DataHandler.fields.get(flkCheckXmlField);
-        return methodName(fieldInfo.fieldProperty, "\ndoFlk") + parameterListStr(dependOnXmlFieldList, pageFieldList, true) + ";";
+        return methodName(fieldInfo.fieldProperty, "\ndoFlk") + parameterListStr(dependOnXmlFieldList, pageFieldList, flkCheckXmlField, true) + ";";
     }
 
     private static String doFlkMethodDeclaration(String xmlField,
@@ -206,7 +208,7 @@ public class CodeGenerator {
         sb.append("\n//").append(mainFieldInfo.xmlPageName.replace(".", "_")).append(".").append(mainFieldInfo.xmlFieldName.replace(".", "_")).append("\n");
         sb.append("private void ").append(methodName(mainFieldInfo.fieldProperty, "doFlk"));
 
-        sb.append(parameterListStr(dependOnXmlFieldList, pageFieldList, false)).append("{\n");
+        sb.append(parameterListStr(dependOnXmlFieldList, pageFieldList, xmlField, false)).append("{\n");
 
 
         //проверка на заполнненость страницы
@@ -257,7 +259,7 @@ public class CodeGenerator {
             if(dependOnXmlFieldList.size() == 1) {
                 sb.append(" && ").append(conditionSb);
             } else {
-                sb.append(" \n&& (").append(conditionSb).append(")");
+                sb.append(" && (").append(conditionSb).append(")");
             }
         }
         sb.append(")");
@@ -315,23 +317,27 @@ public class CodeGenerator {
         return sb.toString();
     }
 
-    private static String parameterListStr(List<String> dependOnXmlFieldList, List<String> pageFieldList, boolean withoutType) {
+    private static String parameterListStr(List<String> dependOnXmlFieldList, List<String> pageFieldList, String flkCheckXmlField, boolean withoutType) {
 
         List<String> tmpList = new ArrayList<>();
         tmpList.addAll(dependOnXmlFieldList);
         tmpList.addAll(pageFieldList);
+        tmpList.add(flkCheckXmlField);
 
         Map<String, DataHandler.FieldInfo> fieldInfoMap = tmpList.stream()
                 .filter(fld -> DataHandler.fields.get(fld).isLocalPageVariable)
                 .map(fld -> DataHandler.fields.get(fld))
-                .collect(Collectors.toMap(DataHandler.FieldInfo::getPageVariable, UnaryOperator.identity(), (p, d) -> p));
+                .collect(Collectors.toMap(p -> StringUtils.isBlank(p.pageVariable)?p.fieldProperty:p.pageVariable, UnaryOperator.identity(), (p, d) -> p));
 
         DataHandler.FieldInfo[] infos = fieldInfoMap.values().toArray(new DataHandler.FieldInfo[0]);
 
+        boolean pageIdx = false;
         StringBuilder prameterSb = new StringBuilder();
         prameterSb.append("(");
         for (int i = 0; i < infos.length; i++) {
             DataHandler.FieldInfo dfi = infos[i];
+            pageIdx = dfi.xmlPageName.endsWith(".row");
+
             if (!withoutType)
                 prameterSb.append(StringUtils.isBlank(dfi.localPageVariableType)?dfi.fieldType:dfi.localPageVariableType);
 
@@ -341,6 +347,9 @@ public class CodeGenerator {
                 prameterSb.append(" ,");
         }
 
+        if(infos.length> 0 && (DataHandler.formIdx || pageIdx)) {
+            prameterSb.append(",").append(!withoutType?" int i":" i");
+        }
         prameterSb.append(")");
 
         return prameterSb.toString();
