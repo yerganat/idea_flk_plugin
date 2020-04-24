@@ -16,7 +16,7 @@ public class UtilityDialog extends DialogWrapper {
         super(true); // use current window as parent
         init();
         setTitle("Sono Flk Utility");
-        setOKButtonText("Сформировать");
+        setOKButtonText("Сгенерировать");
         setCancelButtonText("Отменить");
     }
 
