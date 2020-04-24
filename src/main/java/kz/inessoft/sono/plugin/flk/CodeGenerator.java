@@ -259,7 +259,7 @@ public class CodeGenerator {
             conditionSb.append(pageCheckVarList.get(i));
 
             if (i != pageCheckVarList.size() - 1 || dependOnXmlFieldList.size() > 0)
-                conditionSb.append(" \n|| ");
+                conditionSb.append(" || ");
         }
 
         conditionSb.append(checkFilledStrList(dependOnXmlFieldList, true, false));
@@ -362,8 +362,10 @@ public class CodeGenerator {
                 prameterSb.append(" ,");
         }
 
-        if (infos.length > 0 && (DataHandler.formIdx || DataHandler.rowIdx)) {
-            prameterSb.append(",").append(!withoutType ? " int i" : " i");
+        if (DataHandler.formIdx || DataHandler.rowIdx) {
+            if (infos.length > 0)
+                prameterSb.append(",");
+            prameterSb.append(!withoutType ? " int i" : " i");
         }
         prameterSb.append(")");
 
